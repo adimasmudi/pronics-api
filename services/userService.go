@@ -3,10 +3,12 @@ package services
 import (
 	"context"
 	"errors"
+	"pronics-api/constants"
 	"pronics-api/helper"
 	"pronics-api/inputs"
 	"pronics-api/models"
 	"pronics-api/repositories"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson/primitive"
@@ -17,6 +19,7 @@ import (
 type UserService interface {
 	Login(ctx context.Context, input inputs.LoginUserInput) (models.User, string, error)
 	Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error)
+	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput) (*mongo.InsertOneResult, error)
 }
 
 type userService struct {
@@ -42,6 +45,10 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 		return nil, err
 	}
 
+	if input.Type != constants.UserCustomer && input.Type != constants.UserMitra{
+		return nil, errors.New("tipe user hanya boleh customer atau mitra")
+	}
+
 
 	newUser := models.User{
 		NamaLengkap: input.NamaLengkap,
@@ -59,15 +66,13 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 		return nil, err
 	}
 
-	
-	
-
 	if err != nil{
 		return nil, err
 	}
 
 	newCustomer := models.Customer{
 		UserId: registeredUser.InsertedID.(primitive.ObjectID),
+		Username : strings.Split(input.Email, "@")[0],
 		CreatedAt: time.Now(),
 		UpdatedAt : time.Now(),
 	}
@@ -79,6 +84,10 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 	}
 
 	return registeredUser, nil
+}
+
+func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput) (*mongo.InsertOneResult, error){
+	return nil, nil
 }
 
 func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (models.User, string, error){

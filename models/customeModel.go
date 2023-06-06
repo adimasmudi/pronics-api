@@ -8,7 +8,7 @@ import (
 
 type Customer struct {
 	UserId primitive.ObjectID `json:"user_id" bson:"user_id"`
-	Username string `json:"username,omitempty"`
+	Username string `json:"username"`
 	GambarCustomer string `json:"gambarCustomer,omitempty"`
 	AlamatCustomer []string `json:"alamat_customer,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`

@@ -20,6 +20,7 @@ func NewcustomerRepository(DB *mongo.Collection) *customerRepository{
 }
 
 func (r *customerRepository) SaveRegisterUser(ctx context.Context, customer models.Customer) (*mongo.InsertOneResult, error){
+	
 	result,err := r.DB.InsertOne(ctx, customer)
 
 	if err != nil {

@@ -1,4 +1,4 @@
 package constants
 
-var MitraActive = "active"
-var MitraInActive = "inactive"
+var MitraActive string = "active"
+var MitraInActive string = "inactive"

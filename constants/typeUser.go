@@ -1,4 +1,4 @@
 package constants
 
-var UserCustomer = "customer"
-var UserMitra = "mitra"
+var UserCustomer string = "customer"
+var UserMitra string = "mitra"
