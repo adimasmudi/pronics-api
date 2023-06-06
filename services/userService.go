@@ -9,6 +9,7 @@ import (
 	"pronics-api/repositories"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -20,10 +21,11 @@ type UserService interface {
 
 type userService struct {
 	userRepository repositories.UserRepository
+	customerRepository repositories.CustomerRepository
 }
 
-func NewUserService(userRepository repositories.UserRepository) *userService{
-	return &userService{userRepository}
+func NewUserService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository) *userService{
+	return &userService{userRepository, customerRepository}
 }
 
 func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error){
@@ -52,8 +54,28 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 
 	registeredUser, err := s.userRepository.Save(ctx,newUser)
 
+
 	if err != nil{
 		return nil, err
+	}
+
+	
+	
+
+	if err != nil{
+		return nil, err
+	}
+
+	newCustomer := models.Customer{
+		UserId: registeredUser.InsertedID.(primitive.ObjectID),
+		CreatedAt: time.Now(),
+		UpdatedAt : time.Now(),
+	}
+
+	registeredCustomer, err := s.customerRepository.SaveRegisterUser(ctx, newCustomer)
+
+	if err != nil{
+		return registeredCustomer, err
 	}
 
 	return registeredUser, nil

@@ -1,6 +1,5 @@
 package repositories
 
-
 import (
 	"context"
 	"pronics-api/models"
@@ -9,9 +8,7 @@ import (
 )
 
 type MitraRepository interface {
-	FindByEmail(ctx context.Context, email string) (models.User, error)
-	Save(ctx context.Context, mitra models.Mitra) (*mongo.InsertOneResult, error)
-	IsUserExist(ctx context.Context, email string) (bool, error)
+	SaveMitra(ctx context.Context, mitra models.Mitra) (*mongo.InsertOneResult, error)
 }
 
 type mitraRepository struct{
@@ -20,4 +17,14 @@ type mitraRepository struct{
 
 func NewMitraRepository(DB *mongo.Collection) *mitraRepository{
 	return &mitraRepository{DB}
+}
+
+func (r *mitraRepository) SaveMitra(ctx context.Context, mitra models.Mitra) (*mongo.InsertOneResult, error){
+	result,err := r.DB.InsertOne(ctx, mitra)
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }

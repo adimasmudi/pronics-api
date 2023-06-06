@@ -12,9 +12,10 @@ import (
 func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
+	customerRepository := repositories.NewcustomerRepository(customerCollection)
 
 	// services
-	userService := services.NewUserService(userRepository)
+	userService := services.NewUserService(userRepository, customerRepository)
 
 	// controllers
 	userHandler := controllers.NewUserHandler(userService)

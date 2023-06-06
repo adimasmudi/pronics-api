@@ -26,7 +26,10 @@ func (h *adminHandler) Register(c *fiber.Ctx) error{
 	var input inputs.RegisterAdminInput
 
 	if err := c.BodyParser(&input); err != nil {
-		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", err)
+		errorMessage := &fiber.Map{
+			"Error": err.Error(),
+		}
+		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", errorMessage)
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -34,7 +37,10 @@ func (h *adminHandler) Register(c *fiber.Ctx) error{
 	registeredAdmin, err := h.adminService.Register(ctx, input)
 
 	if err != nil{
-		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", err)
+		errorMessage := &fiber.Map{
+			"Error": err.Error(),
+		}
+		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", errorMessage)
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -53,7 +59,10 @@ func (h *adminHandler) Login(c *fiber.Ctx) error {
 
 	//validate the request body
 	if err := c.BodyParser(&input); err != nil {
-		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", err)
+		errorMessage := &fiber.Map{
+			"Error": err.Error(),
+		}
+		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", errorMessage)
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -61,7 +70,10 @@ func (h *adminHandler) Login(c *fiber.Ctx) error {
 	logedinAdmin, token,  err := h.adminService.Login(ctx,input)
 
 	if err != nil{
-		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", err)
+		errorMessage := &fiber.Map{
+			"Error": err.Error(),
+		}
+		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", errorMessage)
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}

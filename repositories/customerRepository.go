@@ -8,9 +8,7 @@ import (
 )
 
 type CustomerRepository interface {
-	FindByEmail(ctx context.Context, email string) (models.Customer, error)
-	Save(ctx context.Context, customer models.Customer) (*mongo.InsertOneResult, error)
-	IsUserExist(ctx context.Context, email string) (bool, error)
+	SaveRegisterUser(ctx context.Context, customer models.Customer) (*mongo.InsertOneResult, error)
 }
 
 type customerRepository struct{
@@ -19,4 +17,14 @@ type customerRepository struct{
 
 func NewcustomerRepository(DB *mongo.Collection) *customerRepository{
 	return &customerRepository{DB}
+}
+
+func (r *customerRepository) SaveRegisterUser(ctx context.Context, customer models.Customer) (*mongo.InsertOneResult, error){
+	result,err := r.DB.InsertOne(ctx, customer)
+
+	if err != nil {
+		return result, err
+	}
+
+	return result, nil
 }
