@@ -29,10 +29,12 @@ func main() {
 	var adminCollection *mongo.Collection = configs.GetCollection(configs.DB, "admins")
 	var userCollection *mongo.Collection = configs.GetCollection(configs.DB, "users")
 	var customerCollection *mongo.Collection = configs.GetCollection(configs.DB, "customers")
-
+	var mitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "mitras")
+	
+	
 	// routes
 	routes.AdminRoute(app, adminCollection)
-	routes.UserRoute(app, userCollection, customerCollection)
+	routes.UserRoute(app, userCollection, customerCollection, mitraCollection)
 	
 
 	port := os.Getenv("PORT")

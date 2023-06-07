@@ -9,7 +9,7 @@ import (
 type Mitra struct {
 	UserId primitive.ObjectID `json:"user_id" bson:"user_id"`
 	GambarMitra []primitive.ObjectID `json:"gambar_mitra,omitempty"`
-	Wilayah []primitive.ObjectID `json:"wilayah"`
+	Wilayah primitive.ObjectID `json:"wilayah"`
 	Bidang []primitive.ObjectID `json:"bidang"`
 	NamaToko string `json:"nama_toko,omitempty"`
 	Alamat string `json:"alamat"`

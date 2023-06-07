@@ -7,6 +7,7 @@ type RegisterMitraInput struct {
 	NamaToko            string `json:"nama_toko"`
 	NomerTelepon        string `json:"no_telepon" binding:"required"`
 	Deskripsi           string `json:"deskripsi"`
+	Type                string `json:"type"`
 	Alamat              string `json:"alamat" binding:"required"`
 	MitraType           string `json:"type_mitra" binding:"required"`
 	Wilayah             string `json:"wilayah" binding:"required"`

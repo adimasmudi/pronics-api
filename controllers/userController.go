@@ -82,3 +82,35 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var input inputs.RegisterMitraInput
+
+	if err := c.BodyParser(&input); err != nil {
+		errorMessage := &fiber.Map{
+			"Error": err.Error(),
+		}
+		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", errorMessage)
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	registeredUser, err := h.userService.RegisterMitra(ctx, input)
+
+	if err != nil{
+		errorMessage := &fiber.Map{
+			"Error": err.Error(),
+		}
+		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", errorMessage)
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("User registration success", http.StatusOK, "success", registeredUser)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+	
+}
