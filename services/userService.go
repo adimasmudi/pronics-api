@@ -53,6 +53,7 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 
 
 	newUser := models.User{
+		ID : primitive.NewObjectID(),
 		NamaLengkap: input.NamaLengkap,
 		Email : input.Email,
 		Password : string(passwordHash),
@@ -69,6 +70,7 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 	}
 
 	newCustomer := models.Customer{
+		ID : primitive.NewObjectID(),
 		UserId: registeredUser.InsertedID.(primitive.ObjectID),
 		Username : strings.Split(input.Email, "@")[0],
 		CreatedAt: time.Now(),
@@ -106,6 +108,7 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 	}
 
 	newUser := models.User{
+		ID : primitive.NewObjectID(),
 		NamaLengkap: input.NamaLengkap,
 		Email : input.Email,
 		Password : string(passwordHash),
@@ -144,6 +147,7 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 	}
 
 	newMitra := models.Mitra{
+		ID : primitive.NewObjectID(),
 		UserId: registeredUser.InsertedID.(primitive.ObjectID),
 		NamaToko: input.NamaToko,
 		Alamat : input.Alamat,
@@ -162,8 +166,9 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 	}
 
 	newRekening := models.Rekening{
+		ID : primitive.NewObjectID(),
 		UserId: registeredUser.InsertedID.(primitive.ObjectID),
-		BankId : registeredUser.InsertedID.(primitive.ObjectID), // id user sementara
+		BankId : primitive.NewObjectID(), // generate id sementara
 		NamaPemilik: input.NamaPemilikRekening,
 		NomerRekening: input.NomerRekening,
 		CreatedAt: time.Now(),
@@ -193,7 +198,7 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 		return user, "", errors.New("wrong Password")
 	}
 
-	token, err := helper.GenerateToken(user.Email)
+	token, err := helper.GenerateToken(user.ID.String())
 
 	if err != nil{
 		return user, "", errors.New("can't generate token")

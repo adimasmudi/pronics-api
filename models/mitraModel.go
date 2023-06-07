@@ -7,6 +7,7 @@ import (
 )
 
 type Mitra struct {
+	ID primitive.ObjectID `json:"id" bson:"_id"`
 	UserId primitive.ObjectID `json:"user_id" bson:"user_id"`
 	GambarMitra []primitive.ObjectID `json:"gambar_mitra,omitempty"`
 	Wilayah primitive.ObjectID `json:"wilayah"`

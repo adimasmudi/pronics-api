@@ -9,6 +9,7 @@ import (
 	"pronics-api/repositories"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -42,6 +43,7 @@ func (s *adminService) Register(ctx context.Context, input inputs.RegisterAdminI
 
 
 	newAdmin := models.Admin{
+		ID : primitive.NewObjectID(),
 		Username : input.Username,
 		Email : input.Email,
 		Password : string(passwordHash),
@@ -72,7 +74,7 @@ func (s *adminService) Login(ctx context.Context, input inputs.LoginAdminInput) 
 		return admin, "", errors.New("wrong Password")
 	}
 
-	token, err := helper.GenerateToken(admin.Email)
+	token, err := helper.GenerateToken(admin.ID.String())
 
 	if err != nil{
 		return admin, "", errors.New("can't generate token")

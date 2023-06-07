@@ -3,8 +3,8 @@ package middlewares
 import (
 	"errors"
 	"net/http"
-	"strings"
 	"pronics-api/helper"
+	"strings"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/golang-jwt/jwt/v4"
@@ -45,9 +45,9 @@ func Auth(c *fiber.Ctx)error{
 		return nil
 	}
 
-	email := claims["email"].(string)
+	id := claims["ID"].(string)
 	
-	c.Locals("currentUserEmail",email)
+	c.Locals("currentUserID",id)
 
 	return c.Next()
 }
