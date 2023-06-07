@@ -198,7 +198,7 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 		return user, "", errors.New("wrong Password")
 	}
 
-	token, err := helper.GenerateToken(user.ID.String())
+	token, err := helper.GenerateToken(user.ID)
 
 	if err != nil{
 		return user, "", errors.New("can't generate token")

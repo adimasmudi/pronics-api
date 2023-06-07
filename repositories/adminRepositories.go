@@ -5,6 +5,7 @@ import (
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -13,6 +14,7 @@ type AdminRepository interface{
 	FindByEmail(ctx context.Context,email string) (models.Admin, error)
 	Save(ctx context.Context,admin models.Admin) (*mongo.InsertOneResult, error)
 	IsUserExist(ctx context.Context, email string) (bool, error)
+	GetAdminById(ctx context.Context, ID primitive.ObjectID) (models.Admin, error)
 }
 
 type adminRepository struct{
@@ -64,4 +66,16 @@ func (r *adminRepository) IsUserExist(ctx context.Context, email string) (bool, 
 	}
 
 	return true, nil
+}
+
+func (r *adminRepository) GetAdminById(ctx context.Context, ID primitive.ObjectID) (models.Admin, error){
+	var admin models.Admin
+
+	err := r.DB.FindOne(ctx, bson.M{"_id": ID}).Decode(&admin)
+
+	if err != nil{
+		return admin, err
+	}
+
+	return admin, nil
 }

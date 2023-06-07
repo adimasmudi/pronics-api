@@ -17,6 +17,7 @@ import (
 type AdminService interface {
 	Register(ctx context.Context, input inputs.RegisterAdminInput) (*mongo.InsertOneResult, error)
 	Login(ctx context.Context, input inputs.LoginAdminInput) (models.Admin, string, error)
+	GetAdminProfile(ctx context.Context, ID primitive.ObjectID) (models.Admin, error)
 }
 
 type adminService struct{
@@ -47,6 +48,7 @@ func (s *adminService) Register(ctx context.Context, input inputs.RegisterAdminI
 		Username : input.Username,
 		Email : input.Email,
 		Password : string(passwordHash),
+		IsAdmin: true,
 		CreatedAt: time.Now(),
 		UpdatedAt : time.Now(),
 	}
@@ -74,11 +76,21 @@ func (s *adminService) Login(ctx context.Context, input inputs.LoginAdminInput) 
 		return admin, "", errors.New("wrong Password")
 	}
 
-	token, err := helper.GenerateToken(admin.ID.String())
+	token, err := helper.GenerateToken(admin.ID)
 
 	if err != nil{
 		return admin, "", errors.New("can't generate token")
 	}
 
 	return admin, token, nil
+}
+
+func (s *adminService) GetAdminProfile(ctx context.Context, ID primitive.ObjectID) (models.Admin, error){
+	admin, err := s.adminRepository.GetAdminById(ctx, ID)
+
+	if err != nil{
+		return admin, err
+	}
+
+	return admin, nil
 }

@@ -45,7 +45,7 @@ func Auth(c *fiber.Ctx)error{
 		return nil
 	}
 
-	id := claims["ID"].(string)
+	id := claims["ID"]
 	
 	c.Locals("currentUserID",id)
 

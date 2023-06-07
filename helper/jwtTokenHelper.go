@@ -5,9 +5,10 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
-func GenerateToken(ID string) (string, error) {
+func GenerateToken(ID primitive.ObjectID) (string, error) {
 	claim := jwt.MapClaims{}
 	
 	claim["ID"] = ID

@@ -2,6 +2,7 @@ package routes
 
 import (
 	"pronics-api/controllers"
+	"pronics-api/middlewares"
 	"pronics-api/repositories"
 	"pronics-api/services"
 
@@ -23,5 +24,5 @@ func AdminRoute(api fiber.Router, adminCollection *mongo.Collection) {
 
 	authAdmin.Post("/register", adminHandler.Register)
 	authAdmin.Post("/login", adminHandler.Login)
-
+	authAdmin.Get("/profile", middlewares.Auth,adminHandler.GetProfile)
 }
