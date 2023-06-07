@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"pronics-api/formatters"
 	"pronics-api/helper"
@@ -87,8 +86,6 @@ func (h *adminHandler) GetProfile(c *fiber.Ctx) error {
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
-
-	fmt.Println(admin)
 
 	formatter := formatters.FormatAdmin(admin)
 	response := helper.APIResponse("get profil admin success", http.StatusOK, "success", formatter)

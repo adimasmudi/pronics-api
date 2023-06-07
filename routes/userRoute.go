@@ -24,6 +24,7 @@ func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerColle
 
 	authUser := api.Group("/auth/user")
 
+	// login and register
 	authUser.Post("/register", userHandler.Register)
 	authUser.Post("/login", userHandler.Login)
 	authUser.Post("/registerMitra", userHandler.RegisterMitra)

@@ -5,6 +5,7 @@ import (
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -13,6 +14,7 @@ type UserRepository interface {
 	FindByEmail(ctx context.Context, email string) (models.User, error)
 	Save(ctx context.Context, user models.User) (*mongo.InsertOneResult, error)
 	IsUserExist(ctx context.Context, email string) (bool, error)
+	GetUserById(ctx context.Context, ID primitive.ObjectID) (models.User,  error)
 }
 
 type userRepository struct{
@@ -64,4 +66,17 @@ func (r *userRepository) IsUserExist(ctx context.Context, email string) (bool, e
 	}
 
 	return true, nil
+}
+
+func (r *userRepository) GetUserById(ctx context.Context, ID primitive.ObjectID) (models.User,  error){
+
+	var user models.User
+
+	err := r.DB.FindOne(ctx, bson.M{"_id": ID}).Decode(&user)
+
+	if err != nil{
+		return user, err
+	}
+
+	return user, nil
 }

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"pronics-api/configs"
@@ -36,14 +35,13 @@ func main() {
 	// routes
 	routes.AdminRoute(app, adminCollection)
 	routes.UserRoute(app, userCollection, customerCollection, mitraCollection, rekeningCollection)
+	routes.CustomerRoute(app, userCollection, customerCollection)
 	
 
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
 	}
-
-	fmt.Println(port)
 
 	app.Listen(":" + port)
 }
