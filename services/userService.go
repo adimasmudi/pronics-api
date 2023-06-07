@@ -26,10 +26,11 @@ type userService struct {
 	userRepository repositories.UserRepository
 	customerRepository repositories.CustomerRepository
 	mitraRepository repositories.MitraRepository
+	rekeningRepository repositories.RekeningRepository
 }
 
-func NewUserService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, mitraRepository repositories.MitraRepository) *userService{
-	return &userService{userRepository, customerRepository ,mitraRepository}
+func NewUserService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, mitraRepository repositories.MitraRepository, rekeningRepository repositories.RekeningRepository) *userService{
+	return &userService{userRepository, customerRepository ,mitraRepository, rekeningRepository}
 }
 
 func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error){
@@ -158,6 +159,21 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 
 	if err != nil{
 		return registeredMitra, err
+	}
+
+	newRekening := models.Rekening{
+		UserId: registeredUser.InsertedID.(primitive.ObjectID),
+		BankId : registeredUser.InsertedID.(primitive.ObjectID), // id user sementara
+		NamaPemilik: input.NamaPemilikRekening,
+		NomerRekening: input.NomerRekening,
+		CreatedAt: time.Now(),
+		UpdatedAt: time.Now(),
+	}
+
+	rekeningAdded, err := s.rekeningRepository.SaveRekening(ctx, newRekening)
+
+	if err != nil{
+		return rekeningAdded, err
 	}
 
 	return registeredUser, nil

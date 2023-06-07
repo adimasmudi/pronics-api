@@ -9,14 +9,15 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection) {
+func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection, rekeningCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
 	customerRepository := repositories.NewcustomerRepository(customerCollection)
 	mitraRepository := repositories.NewMitraRepository(mitraCollection)
+	rekeningRepository := repositories.NewRekeningRepository(rekeningCollection)
 
 	// services
-	userService := services.NewUserService(userRepository, customerRepository, mitraRepository)
+	userService := services.NewUserService(userRepository, customerRepository, mitraRepository, rekeningRepository)
 
 	// controllers
 	userHandler := controllers.NewUserHandler(userService)
