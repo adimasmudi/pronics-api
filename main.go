@@ -31,12 +31,13 @@ func main() {
 	var mitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "mitras")
 	var rekeningCollection *mongo.Collection = configs.GetCollection(configs.DB, "rekenings")
 	
+	api := app.Group("/api/v1")
 	
 	// routes
-	routes.AdminRoute(app, adminCollection)
-	routes.UserRoute(app, userCollection, customerCollection, mitraCollection, rekeningCollection)
-	routes.CustomerRoute(app, userCollection, customerCollection)
-	
+	routes.AdminRoute(api, adminCollection)
+	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection)
+	routes.CustomerRoute(api, userCollection, customerCollection)
+	routes.MitraRoute(api, userCollection, mitraCollection)
 
 	port := os.Getenv("PORT")
 	if port == "" {

@@ -12,7 +12,7 @@ import (
 func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection, rekeningCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
-	customerRepository := repositories.NewcustomerRepository(customerCollection)
+	customerRepository := repositories.NewCustomerRepository(customerCollection)
 	mitraRepository := repositories.NewMitraRepository(mitraCollection)
 	rekeningRepository := repositories.NewRekeningRepository(rekeningCollection)
 

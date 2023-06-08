@@ -28,7 +28,7 @@ func (h *customerHandler) GetProfile(c *fiber.Ctx) error {
 	customer, err := h.customerService.GetCustomerProfile(ctx,currentUserId)
 
 	if err != nil{
-		response := helper.APIResponse("Can't get admin profile", http.StatusBadRequest, "error", err.Error())
+		response := helper.APIResponse("Can't get customer profile", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}

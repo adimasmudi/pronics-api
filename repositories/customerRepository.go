@@ -19,7 +19,7 @@ type customerRepository struct{
 	DB *mongo.Collection
 }
 
-func NewcustomerRepository(DB *mongo.Collection) *customerRepository{
+func NewCustomerRepository(DB *mongo.Collection) *customerRepository{
 	return &customerRepository{DB}
 }
 

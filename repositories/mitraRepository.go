@@ -12,6 +12,7 @@ import (
 type MitraRepository interface {
 	SaveMitra(ctx context.Context, mitra models.Mitra) (*mongo.InsertOneResult, error)
 	GetMitraById(ctx context.Context, ID primitive.ObjectID) (models.Mitra,  error)
+	GetMitraByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Mitra,  error)
 }
 
 type mitraRepository struct{
@@ -37,6 +38,19 @@ func (r *mitraRepository) GetMitraById(ctx context.Context, ID primitive.ObjectI
 	var mitra models.Mitra
 
 	err := r.DB.FindOne(ctx, bson.M{"_id": ID}).Decode(&mitra)
+
+	if err != nil{
+		return mitra, err
+	}
+
+	return mitra, nil
+}
+
+func (r *mitraRepository) GetMitraByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Mitra,  error){
+
+	var mitra models.Mitra
+
+	err := r.DB.FindOne(ctx, bson.M{"user_id": IdUser}).Decode(&mitra)
 
 	if err != nil{
 		return mitra, err
