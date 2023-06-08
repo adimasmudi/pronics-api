@@ -11,7 +11,7 @@ type Bidang struct {
 	KategoriId primitive.ObjectID `json:"bidang_id" bson:"bidang_id"`
 	LayananId []primitive.ObjectID `json:"layanan_id" bson:"layanan_id"`
 	NamaBidang string `json:"nama_bidang"`
-	AvailableTakeDelivery bool `json:"available_take_delivery"`
+	CreatedById primitive.ObjectID `json:"created_by_id"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

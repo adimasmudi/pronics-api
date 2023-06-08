@@ -30,7 +30,8 @@ func main() {
 	var customerCollection *mongo.Collection = configs.GetCollection(configs.DB, "customers")
 	var mitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "mitras")
 	var rekeningCollection *mongo.Collection = configs.GetCollection(configs.DB, "rekenings")
-	
+	var kategoriCollection *mongo.Collection = configs.GetCollection(configs.DB, "categories")
+
 	api := app.Group("/api/v1")
 	
 	// routes
@@ -38,6 +39,7 @@ func main() {
 	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection)
 	routes.CustomerRoute(api, userCollection, customerCollection)
 	routes.MitraRoute(api, userCollection, mitraCollection)
+	routes.KategoriRoute(api, kategoriCollection)
 
 	port := os.Getenv("PORT")
 	if port == "" {
