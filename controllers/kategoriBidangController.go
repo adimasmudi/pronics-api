@@ -44,3 +44,23 @@ func (h *kategoriHandler) Save(c *fiber.Ctx) error{
 	return nil
 	
 }
+
+// get all kategori
+func (h *kategoriHandler) FindAll(c *fiber.Ctx) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	allKategori, err := h.kategoriService.FindAll(ctx)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to get all category", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get all category success", http.StatusOK, "success", allKategori)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+// get all kategori with Bidang

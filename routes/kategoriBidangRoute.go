@@ -23,4 +23,5 @@ func KategoriRoute(api fiber.Router, kategoriCollection *mongo.Collection){
 	kategori := api.Group("/kategori")
 
 	kategori.Post("/save", middlewares.Auth, kategoriHandler.Save)
+	kategori.Get("/all", kategoriHandler.FindAll)
 }

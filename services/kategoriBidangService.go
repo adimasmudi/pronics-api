@@ -13,6 +13,7 @@ import (
 
 type KategoriBidangService interface {
 	Save(ctx context.Context, input inputs.AddKategoriInput) (*mongo.InsertOneResult, error)
+	FindAll(ctx context.Context) ([]models.Kategori, error)
 	
 }
 
@@ -39,4 +40,14 @@ func (s *kategoriBidangService) Save(ctx context.Context, input inputs.AddKatego
 	}
 
 	return kategoriAdded, nil
+}
+
+func (s *kategoriBidangService) FindAll(ctx context.Context) ([]models.Kategori, error){
+	allKategori, err := s.kategoriBidangRepository.FindAll(ctx)
+
+	if err != nil{
+		return allKategori, err
+	}
+
+	return allKategori, nil
 }
