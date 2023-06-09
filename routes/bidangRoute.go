@@ -2,7 +2,6 @@ package routes
 
 import (
 	"pronics-api/controllers"
-	"pronics-api/middlewares"
 	"pronics-api/repositories"
 	"pronics-api/services"
 
@@ -23,6 +22,6 @@ func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriC
 
 	bidang := api.Group("/bidang")
 
-	bidang.Post("/save", middlewares.Auth, bidangHandler.Save)
+	bidang.Post("/save", bidangHandler.Save)
 	bidang.Get("/all", bidangHandler.FindAll)
 }
