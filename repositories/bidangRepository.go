@@ -5,12 +5,14 @@ import (
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type BidangRepository interface {
 	SaveBidang(ctx context.Context, bidang models.Bidang) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bidang, error)
+	GetById(ctx context.Context, ID primitive.ObjectID) (models.Bidang, error)
 }
 
 type bidangRepository struct{
@@ -58,4 +60,15 @@ func (r *bidangRepository) FindAll(ctx context.Context) ([]models.Bidang, error)
 	currentRes.Close(ctx)
 
 	return bidangs, nil
+}
+
+func (r *bidangRepository) GetById(ctx context.Context, ID primitive.ObjectID) (models.Bidang, error){
+	var bidang models.Bidang
+	err := r.DB.FindOne(ctx, bson.M{"_id": ID}).Decode(&bidang)
+
+	if err != nil{
+		return bidang, err
+	}
+
+	return bidang, nil
 }

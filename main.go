@@ -41,7 +41,7 @@ func main() {
 	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection)
 	routes.CustomerRoute(api, userCollection, customerCollection)
 	routes.MitraRoute(api, userCollection, mitraCollection)
-	routes.KategoriRoute(api, kategoriCollection)
+	routes.KategoriRoute(api, kategoriCollection, bidangCollection)
 	routes.WilayahCakupanRoute(api, wilayahCakupanCollection)
 	routes.BidangRoute(api, bidangCollection, kategoriCollection)
 
