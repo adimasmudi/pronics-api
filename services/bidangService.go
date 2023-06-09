@@ -53,9 +53,7 @@ func (s *bidangService) SaveBidang(ctx context.Context, input inputs.AddBidangIn
 	var bidangArr []primitive.ObjectID
 
 	if kategoriBidang.BidangId != nil{
-		for _, bidang := range kategoriBidang.BidangId{
-			bidangArr = append(bidangArr, bidang)
-		}
+		bidangArr = append(bidangArr, kategoriBidang.BidangId...)
 	}
 
 	bidangArr = append(bidangArr, bidangAdded.InsertedID.(primitive.ObjectID))
