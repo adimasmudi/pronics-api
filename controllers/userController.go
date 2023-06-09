@@ -153,7 +153,34 @@ func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{
 		return nil
 	}
 
-	registeredUser, err := h.userService.RegisterMitra(ctx, input)
+	eKTP, err := c.FormFile("e_ktp")
+
+	if err != nil{
+		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	blobFile, err := eKTP.Open()
+
+	if err != nil{
+		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	// generate kode unik untuk fileName
+	fileName := helper.GenerateFilename(eKTP.Filename)
+	
+	err = configs.StorageInit("ektp").UploadFile(blobFile, fileName)
+
+	if err != nil{
+		response := helper.APIResponse("Register Mitra Failed Upload Image E-ktp", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	registeredUser, err := h.userService.RegisterMitra(ctx, input, fileName)
 
 	if err != nil{
 		errorMessage := &fiber.Map{

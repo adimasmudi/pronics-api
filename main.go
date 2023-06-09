@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"pronics-api/configs"
@@ -8,6 +9,7 @@ import (
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
+	"github.com/joho/godotenv"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
@@ -21,6 +23,12 @@ func main() {
 		AllowMethods:     "GET,POST,HEAD,PUT,DELETE,PATCH,OPTIONS",
 	}))
 
+	err := godotenv.Load()
+
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	// run database
 	configs.ConnectDB()
 
@@ -33,12 +41,13 @@ func main() {
 	var kategoriCollection *mongo.Collection = configs.GetCollection(configs.DB, "categories")
 	var wilayahCakupanCollection *mongo.Collection = configs.GetCollection(configs.DB, "wilayahCakupans")
 	var bidangCollection *mongo.Collection = configs.GetCollection(configs.DB, "bidangs")
+	var ktpMitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "ktpMitras")
 
 	api := app.Group("/api/v1")
 	
 	// routes
 	routes.AdminRoute(api, adminCollection)
-	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection)
+	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection, ktpMitraCollection)
 	routes.CustomerRoute(api, userCollection, customerCollection)
 	routes.MitraRoute(api, userCollection, mitraCollection)
 	routes.KategoriRoute(api, kategoriCollection, bidangCollection)

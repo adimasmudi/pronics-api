@@ -6,3 +6,4 @@ type GoogleUser struct {
 	VerifiedEmail bool
 	Picture       string
 }
+

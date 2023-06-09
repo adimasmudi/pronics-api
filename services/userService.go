@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"pronics-api/constants"
 	"pronics-api/helper"
 	"pronics-api/inputs"
@@ -20,7 +21,7 @@ import (
 type UserService interface {
 	Login(ctx context.Context, input inputs.LoginUserInput) (models.User, string, error)
 	Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error)
-	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput) (*mongo.InsertOneResult, error)
+	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput, fileName string) (*mongo.InsertOneResult, error)
 	Signup(ctx context.Context, googleUser helper.GoogleUser) (string,error)
 }
 
@@ -29,10 +30,11 @@ type userService struct {
 	customerRepository repositories.CustomerRepository
 	mitraRepository repositories.MitraRepository
 	rekeningRepository repositories.RekeningRepository
+	ktpMitraRepository repositories.KTPMitraRepository
 }
 
-func NewUserService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, mitraRepository repositories.MitraRepository, rekeningRepository repositories.RekeningRepository) *userService{
-	return &userService{userRepository, customerRepository ,mitraRepository, rekeningRepository}
+func NewUserService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, mitraRepository repositories.MitraRepository, rekeningRepository repositories.RekeningRepository, ktpMitraRepository repositories.KTPMitraRepository) *userService{
+	return &userService{userRepository, customerRepository ,mitraRepository, rekeningRepository, ktpMitraRepository}
 }
 
 func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error){
@@ -88,7 +90,7 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 	return registeredUser, nil
 }
 
-func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput) (*mongo.InsertOneResult, error){
+func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput, fileName string) (*mongo.InsertOneResult, error){
 	userExist, _ := s.userRepository.IsUserExist(ctx,input.Email )
 
 	if userExist{
@@ -141,7 +143,6 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 	bidangArr := strings.Split(bidangStr, ",")
 
 	var bidangMitra []primitive.ObjectID
-	
 
 	for _, bidang := range bidangArr{
 		eachBidang, _ := primitive.ObjectIDFromHex(bidang)
@@ -181,6 +182,20 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 
 	if err != nil{
 		return rekeningAdded, err
+	}
+
+	newKTPMitra := models.KTPMitra{
+		ID : primitive.NewObjectID(),
+		MitraId: registeredMitra.InsertedID.(primitive.ObjectID),
+		GambarKtp: os.Getenv("CLOUD_STORAGE_READ_LINK")+"ektp/"+fileName,
+		CreatedAt: time.Now(),
+		UpdatedAt : time.Now(),
+	}
+
+	ktpAdded, err := s.ktpMitraRepository.Save(ctx, newKTPMitra)
+
+	if err != nil{
+		return ktpAdded, err
 	}
 
 	return registeredUser, nil
