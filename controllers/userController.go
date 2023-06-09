@@ -2,7 +2,12 @@ package controllers
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+	"os"
+	"pronics-api/configs"
 	"pronics-api/helper"
 	"pronics-api/inputs"
 	"pronics-api/services"
@@ -81,6 +86,56 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 	response := helper.APIResponse("Login success", http.StatusOK, "success", &fiber.Map{ "token" : token})
 	c.Status(http.StatusOK).JSON(response)
 	return nil
+}
+
+func (h *userHandler) Callback(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	if c.FormValue("state") != os.Getenv("oAuth_String") {
+		response := helper.APIResponse("Can't login to your account", http.StatusBadRequest, "error", errors.New("token login invalid"))
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	token, err := configs.GoogleOAuthConfig().Exchange(context.Background(), c.FormValue("code"))
+	if err != nil {
+		response := helper.APIResponse("code exchange failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response, err := http.Get("https://www.googleapis.com/oauth2/v2/userinfo?access_token=" + token.AccessToken)
+	if err != nil {
+		response := helper.APIResponse("failed getting user info", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	defer response.Body.Close()
+	contents, err := io.ReadAll(response.Body)
+	if err != nil {
+		response := helper.APIResponse("Failed reading response body", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	var googleUser helper.GoogleUser
+
+	json.Unmarshal([]byte(string(contents)), &googleUser)
+
+	loginToken, err := h.userService.Signup(ctx,googleUser)
+
+	if err != nil{
+		response := helper.APIResponse("Signup User Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	responses := helper.APIResponse("Signup User Success", http.StatusOK, "success", &fiber.Map{"token" : loginToken})
+	c.Status(http.StatusOK).JSON(responses)
+	return nil
+
 }
 
 func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{

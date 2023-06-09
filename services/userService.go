@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"pronics-api/constants"
 	"pronics-api/helper"
 	"pronics-api/inputs"
@@ -20,6 +21,7 @@ type UserService interface {
 	Login(ctx context.Context, input inputs.LoginUserInput) (models.User, string, error)
 	Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error)
 	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput) (*mongo.InsertOneResult, error)
+	Signup(ctx context.Context, googleUser helper.GoogleUser) (string,error)
 }
 
 type userService struct {
@@ -72,7 +74,7 @@ func (s *userService) Register(ctx context.Context, input inputs.RegisterUserInp
 	newCustomer := models.Customer{
 		ID : primitive.NewObjectID(),
 		UserId: registeredUser.InsertedID.(primitive.ObjectID),
-		Username : strings.Split(input.Email, "@")[0],
+		Username : input.Email,
 		CreatedAt: time.Now(),
 		UpdatedAt : time.Now(),
 	}
@@ -205,4 +207,69 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 	}
 
 	return user, token, nil
+}
+
+func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) (string,error){
+	userExist, _ := s.userRepository.IsUserExist(ctx,googleUser.Email)
+
+	fmt.Println(googleUser, userExist)
+
+
+	if !userExist{
+		newUser := models.User{
+			ID : primitive.NewObjectID(),
+			NamaLengkap: strings.Split(googleUser.Email, "@")[0],
+			Email : googleUser.Email,
+			Type : constants.UserCustomer,
+			CreatedAt: time.Now(),
+			UpdatedAt : time.Now(),
+		}
+	
+		registeredUser, err := s.userRepository.Save(ctx,newUser)
+	
+	
+		if err != nil{
+			return "", err
+		}
+	
+		newCustomer := models.Customer{
+			ID : primitive.NewObjectID(),
+			UserId: registeredUser.InsertedID.(primitive.ObjectID),
+			Username : googleUser.Email,
+			GambarCustomer : googleUser.Picture,
+			CreatedAt: time.Now(),
+			UpdatedAt : time.Now(),
+		}
+	
+		registeredCustomer, err := s.customerRepository.SaveRegisterUser(ctx, newCustomer)
+		
+		fmt.Println(registeredCustomer)
+
+		if err != nil{
+			return "", err
+		}
+
+		token,err := helper.GenerateToken(registeredUser.InsertedID.(primitive.ObjectID))
+
+		if err != nil{
+			return token,err
+		}
+
+		return token, nil
+	}
+
+	userFound, err := s.userRepository.FindByEmail(ctx,googleUser.Email)
+
+	
+	if err != nil{
+		return "", err
+	}
+
+	token,err := helper.GenerateToken(userFound.ID)
+
+	if err != nil{
+		return token, err
+	}
+
+	return token, nil
 }

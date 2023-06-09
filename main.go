@@ -50,5 +50,14 @@ func main() {
 		port = "8080"
 	}
 
+	app.Get("/",func(c *fiber.Ctx) error {
+		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+		return c.SendString(`<html>
+		<body>
+			<a href="/api/v1/auth/user/login/google">Login Google</a>
+		</body>
+		</html>`)
+	})
+
 	app.Listen(":" + port)
 }

@@ -1,9 +1,14 @@
 package routes
 
 import (
+	"context"
+	"net/http"
+	"os"
+	"pronics-api/configs"
 	"pronics-api/controllers"
 	"pronics-api/repositories"
 	"pronics-api/services"
+	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -28,5 +33,16 @@ func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerColle
 	authUser.Post("/register", userHandler.Register)
 	authUser.Post("/login", userHandler.Login)
 	authUser.Post("/registerMitra", userHandler.RegisterMitra)
+	authUser.Get("/login/google",func(c *fiber.Ctx) error {
+		_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+
+		defer cancel()
+		url := configs.GoogleOAuthConfig().AuthCodeURL(os.Getenv("oAuth_String"))
+		
+		c.Redirect(url, http.StatusTemporaryRedirect)
+		return nil
+	})
+
+	authUser.Get("/callback",userHandler.Callback)
 
 }
