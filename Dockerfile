@@ -9,8 +9,6 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o /pronics-api
+RUN go build -o ./out/dist .
 
-EXPOSE 8080
-
-CMD ["pronics-api"]
+CMD ./out/dist
