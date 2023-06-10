@@ -56,6 +56,8 @@ func main() {
 	routes.BidangRoute(api, bidangCollection, kategoriCollection)
 
 	port := os.Getenv("PORT")
+
+	fmt.Println("dapat port", port)
 	if port == "" {
 		port = "8080"
 	}
