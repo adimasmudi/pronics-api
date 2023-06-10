@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -58,6 +59,8 @@ func main() {
 	if port == "" {
 		port = "8080"
 	}
+
+	fmt.Println(port)
 
 	app.Get("/",func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
