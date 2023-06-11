@@ -58,14 +58,3 @@ func (c *ClientUploader) UploadFile(file multipart.File, object string) (error) 
 	
 	return nil
 }
-
-// read file
-func (c *ClientUploader) ReadFile(fileName string) (string,error) {
-	ctx := context.Background()
-
-	ctx, cancel := context.WithTimeout(ctx, time.Second*50)
-	defer cancel()
-
-	return fmt.Sprintf("https://storage.cloud.google.com/%s/%s%s",c.bucketName, c.uploadPath, fileName), nil
-
-}
