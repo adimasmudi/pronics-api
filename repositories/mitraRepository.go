@@ -13,6 +13,7 @@ type MitraRepository interface {
 	SaveMitra(ctx context.Context, mitra models.Mitra) (*mongo.InsertOneResult, error)
 	GetMitraById(ctx context.Context, ID primitive.ObjectID) (models.Mitra,  error)
 	GetMitraByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Mitra,  error)
+	UpdateProfil(ctx context.Context, ID primitive.ObjectID, newMitra primitive.M)(*mongo.UpdateResult, error)
 }
 
 type mitraRepository struct{
@@ -57,4 +58,14 @@ func (r *mitraRepository) GetMitraByIdUser(ctx context.Context, IdUser primitive
 	}
 
 	return mitra, nil
+}
+
+func (r *mitraRepository) UpdateProfil(ctx context.Context, ID primitive.ObjectID, newMitra primitive.M)(*mongo.UpdateResult, error){
+	result, err := r.DB.UpdateOne(ctx,bson.M{"_id":ID},bson.M{"$set" : newMitra})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
 }

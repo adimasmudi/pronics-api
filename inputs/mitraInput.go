@@ -17,12 +17,13 @@ type RegisterMitraInput struct {
 	NomerRekening       string `form:"nomer_rekening" binding:"required"`
 }
 
-type UpdateProfilMitraInput struct{
+type UpdateProfilMitraInput struct {
 	NamaLengkap  string `form:"nama_lengkap" binding:"required"`
 	Email        string `form:"email" binding:"required"`
-	Username     string `form:"username" binding:"required"`
-	NoHandphone  string `form:"no_handphone"`
-	Deskripsi    string `form:"bio"`
+	NoHandphone  string `form:"no_handphone" binding:"required"`
+	Deskripsi    string `form:"deskripsi"`
 	JenisKelamin string `form:"jenis_kelamin"`
 	TanggalLahir string `form:"tanggal_lahir"`
+	NamaToko     string `form:"nama_toko"`
+	Alamat       string `form:"alamat" binding:"required"`
 }

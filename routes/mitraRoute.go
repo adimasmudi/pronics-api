@@ -24,5 +24,6 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute := api.Group("/mitra")
 
 	mitraRoute.Get("/profile", middlewares.Auth, mitraHandler.GetProfile)
+	mitraRoute.Put("/profile/update", middlewares.Auth, mitraHandler.UpdateProfile)
 
 }
