@@ -15,6 +15,7 @@ type UserRepository interface {
 	Save(ctx context.Context, user models.User) (*mongo.InsertOneResult, error)
 	IsUserExist(ctx context.Context, email string) (bool, error)
 	GetUserById(ctx context.Context, ID primitive.ObjectID) (models.User,  error)
+	UpdateUser(ctx context.Context, ID primitive.ObjectID, newUser primitive.M)(*mongo.UpdateResult, error)
 }
 
 type userRepository struct{
@@ -79,4 +80,14 @@ func (r *userRepository) GetUserById(ctx context.Context, ID primitive.ObjectID)
 	}
 
 	return user, nil
+}
+
+func (r *userRepository) UpdateUser(ctx context.Context, ID primitive.ObjectID, newUser primitive.M)(*mongo.UpdateResult, error){
+	result, err := r.DB.UpdateOne(ctx,bson.M{"_id":ID},bson.M{"$set" : newUser})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
 }

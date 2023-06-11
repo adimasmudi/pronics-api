@@ -13,6 +13,7 @@ type CustomerRepository interface {
 	SaveRegisterUser(ctx context.Context, customer models.Customer) (*mongo.InsertOneResult, error)
 	GetCustomerById(ctx context.Context, ID primitive.ObjectID) (models.Customer,  error)
 	GetCustomerByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Customer,  error)
+	UpdateProfil(ctx context.Context, ID primitive.ObjectID, newCustomer primitive.M)(*mongo.UpdateResult, error)
 }
 
 type customerRepository struct{
@@ -58,4 +59,14 @@ func (r *customerRepository) GetCustomerByIdUser(ctx context.Context, IdUser pri
 	}
 
 	return customer, nil
+}
+
+func (r *customerRepository) UpdateProfil(ctx context.Context, ID primitive.ObjectID, newCustomer primitive.M)(*mongo.UpdateResult, error){
+	result, err := r.DB.UpdateOne(ctx,bson.M{"_id":ID},bson.M{"$set" : newCustomer})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
 }

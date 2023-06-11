@@ -1,8 +1,6 @@
 package formatters
 
 import (
-	"time"
-
 	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
@@ -13,5 +11,5 @@ type UserResponse struct{
 	NoTelepon string `json:"no_telepon"`
 	Bio string `json:"bio"`
 	JenisKelamin string `json:"jenis_kelamin"`
-	TanggalLahir time.Time `json:"tanggal_lahir"`
+	TanggalLahir string `json:"tanggal_lahir"`
 }

@@ -15,7 +15,7 @@ type User struct {
 	Deskripsi string `json:"deskripsi,omitempty"`
 	JenisKelamin string `json:"jenis_kelamin,omitempty"`
 	Type string `json:"type"` // customer / mitra
-	TanggalLahir time.Time `json:"tanggal_lahir,omitempty"`
+	TanggalLahir string `json:"tanggal_lahir,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
