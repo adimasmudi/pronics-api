@@ -68,7 +68,7 @@ func main() {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 		return c.SendString(`<html>
 		<body>
-			<a href="/api/v1/auth/user/login/google">Login with Google</a>
+			<a href="/api/v1/auth/user/login/google">Login dengan Google</a>
 		</body>
 		</html>`)
 	})

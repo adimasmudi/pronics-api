@@ -206,7 +206,7 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 	user, err := s.userRepository.FindByEmail(ctx,input.Email)
 
 	if err != nil{
-		return user, "", errors.New("email not found")
+		return user, "", err
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(input.Password))
@@ -228,7 +228,7 @@ func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) 
 	userExist, _ := s.userRepository.IsUserExist(ctx,googleUser.Email)
 
 	fmt.Println(googleUser, userExist)
-
+	fmt.Println("halo")
 
 	if !userExist{
 		newUser := models.User{
