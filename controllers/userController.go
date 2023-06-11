@@ -32,10 +32,7 @@ func (h *userHandler) Register(c *fiber.Ctx) error{
 	var input inputs.RegisterUserInput
 
 	if err := c.BodyParser(&input); err != nil {
-		errorMessage := &fiber.Map{
-			"Error": err.Error(),
-		}
-		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -43,10 +40,7 @@ func (h *userHandler) Register(c *fiber.Ctx) error{
 	registeredUser, err := h.userService.Register(ctx, input)
 
 	if err != nil{
-		errorMessage := &fiber.Map{
-			"Error": err.Error(),
-		}
-		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Register Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -65,10 +59,7 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 
 	//validate the request body
 	if err := c.BodyParser(&input); err != nil {
-		errorMessage := &fiber.Map{
-			"Error": err.Error(),
-		}
-		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -76,10 +67,7 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 	_, token,  err := h.userService.Login(ctx,input)
 
 	if err != nil{
-		errorMessage := &fiber.Map{
-			"Error": err.Error(),
-		}
-		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -148,10 +136,7 @@ func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{
 	var input inputs.RegisterMitraInput
 
 	if err := c.BodyParser(&input); err != nil {
-		errorMessage := &fiber.Map{
-			"Error": err.Error(),
-		}
-		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
@@ -186,10 +171,7 @@ func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{
 	registeredUser, err := h.userService.RegisterMitra(ctx, input, fileName)
 
 	if err != nil{
-		errorMessage := &fiber.Map{
-			"Error": err.Error(),
-		}
-		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", errorMessage)
+		response := helper.APIResponse("Register Mitra Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}

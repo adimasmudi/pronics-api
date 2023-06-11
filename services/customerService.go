@@ -50,11 +50,21 @@ func (s *customerService) GetCustomerProfile(ctx context.Context, ID primitive.O
 }
 
 func (s *customerService) UpdateProfileCustomer(ctx context.Context, ID primitive.ObjectID, input inputs.UpdateProfilCustomerInput, fileName string) (*mongo.UpdateResult, error){
-	newCustomer := bson.M{
-		"username" : input.Username,
-		"gambarcustomer": os.Getenv("CLOUD_STORAGE_READ_LINK")+"customer/"+fileName,
-		"updatedat" : time.Now(),
+	var newCustomer primitive.M
+	
+	if fileName != ""{
+		newCustomer = bson.M{
+			"username" : input.Username,
+			"gambarcustomer": os.Getenv("CLOUD_STORAGE_READ_LINK")+"customer/"+fileName,
+			"updatedat" : time.Now(),
+		}
+	}else{
+		newCustomer = bson.M{
+			"username" : input.Username,
+			"updatedat" : time.Now(),
+		}
 	}
+	
 
 	newUser := bson.M{
 		"namalengkap" : input.NamaLengkap,
