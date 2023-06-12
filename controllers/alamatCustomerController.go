@@ -45,5 +45,23 @@ func (h *alamatCustomerHandler) Save(c *fiber.Ctx) error{
 	response := helper.APIResponse("Add alamat success", http.StatusOK, "success", addedAlamat)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
-	
+}
+
+func (h *alamatCustomerHandler) GetAllAlamatCustomer(c *fiber.Ctx) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	allAlamat, err := h.alamatCustomerService.GetAllAlamat(ctx, currentUserId)
+
+	if err != nil{
+		response := helper.APIResponse("Get alll alamat Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get all alamat success", http.StatusOK, "success", allAlamat)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
 }

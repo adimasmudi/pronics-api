@@ -55,7 +55,7 @@ func main() {
 	routes.KategoriRoute(api, kategoriCollection, bidangCollection)
 	routes.WilayahCakupanRoute(api, wilayahCakupanCollection)
 	routes.BidangRoute(api, bidangCollection, kategoriCollection)
-	routes.AlamatCustomerRoute(api, alamatCustomerCollection, customerCollection)
+	routes.AlamatCustomerRoute(api, alamatCustomerCollection, customerCollection, userCollection)
 
 	port := os.Getenv("PORT")
 

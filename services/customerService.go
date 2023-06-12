@@ -41,6 +41,10 @@ func (s *customerService) GetCustomerProfile(ctx context.Context, ID primitive.O
 
 	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, user.ID)
 
+	if err != nil{
+		return data, err
+	}
+
 	var formatAlamats []formatters.AlamatResponse
 
 	for _, alamatId := range customer.AlamatCustomer{

@@ -15,15 +15,17 @@ import (
 
 type AlamatCustomerService interface {
 	SaveAlamat(ctx context.Context, alamat inputs.AddAlamatCustomerInput, userId primitive.ObjectID) (*mongo.InsertOneResult, error)
+	GetAllAlamat(ctx context.Context, ID primitive.ObjectID) ([]models.AlamatCustomer, error)
 }
 
 type alamatCustomerService struct{
 	alamatCustomerRepository repositories.AlamatCustomerRepository
 	customerRepository repositories.CustomerRepository
+	userRepository     repositories.UserRepository
 }
 
-func NewAlamatCustomerService(alamatCustomerRepository repositories.AlamatCustomerRepository, customerRepository repositories.CustomerRepository) *alamatCustomerService{
-	return &alamatCustomerService{alamatCustomerRepository, customerRepository}
+func NewAlamatCustomerService(alamatCustomerRepository repositories.AlamatCustomerRepository, customerRepository repositories.CustomerRepository, userRepository repositories.UserRepository) *alamatCustomerService{
+	return &alamatCustomerService{alamatCustomerRepository, customerRepository, userRepository}
 }
 
 func (s *alamatCustomerService) SaveAlamat(ctx context.Context, alamat inputs.AddAlamatCustomerInput, userId primitive.ObjectID) (*mongo.InsertOneResult, error){
@@ -78,4 +80,28 @@ func (s *alamatCustomerService) SaveAlamat(ctx context.Context, alamat inputs.Ad
 	fmt.Println(insertedAlamat, err)
 
 	return alamatAdded, nil
+}
+
+func (s *alamatCustomerService) GetAllAlamat(ctx context.Context, ID primitive.ObjectID) ([]models.AlamatCustomer, error){
+	var data []models.AlamatCustomer
+
+	user, err := s.userRepository.GetUserById(ctx, ID)
+
+	if err != nil{
+		return data, err
+	}
+
+	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, user.ID)
+
+	if err != nil{
+		return data, err
+	}
+
+	alamats, err := s.alamatCustomerRepository.FindAllByCustomerId(ctx, customer.ID)
+
+	if err != nil{
+		return data, err
+	}
+
+	return alamats, nil
 }
