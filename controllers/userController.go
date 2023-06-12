@@ -4,10 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"pronics-api/configs"
+	"pronics-api/formatters"
 	"pronics-api/helper"
 	"pronics-api/inputs"
 	"pronics-api/services"
@@ -63,7 +65,7 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 		return nil
 	}
 
-	_, token,  err := h.userService.Login(ctx,input)
+	user, token,  err := h.userService.Login(ctx,input)
 
 	if err != nil{
 		response := helper.APIResponse("Login Failed", http.StatusBadRequest, "error", err.Error())
@@ -71,7 +73,10 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 		return nil
 	}
 
-	response := helper.APIResponse("Login success", http.StatusOK, "success", &fiber.Map{ "token" : token})
+	userFormat := formatters.FormatUser(user)
+	fmt.Println(user)
+	fmt.Println(userFormat)
+	response := helper.APIResponse("Login success", http.StatusOK, "success", &fiber.Map{ "user" : userFormat,"token" : token})
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
@@ -112,15 +117,15 @@ func (h *userHandler) Callback(c *fiber.Ctx) error {
 
 	json.Unmarshal([]byte(string(contents)), &googleUser)
 
-	loginToken, err := h.userService.Signup(ctx,googleUser)
+	user,loginToken, err := h.userService.Signup(ctx,googleUser)
 
 	if err != nil{
 		response := helper.APIResponse("Signup User Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
-
-	responses := helper.APIResponse("Signup User Success", http.StatusOK, "success", &fiber.Map{"token" : loginToken})
+	userFormat := formatters.FormatUser(user)
+	responses := helper.APIResponse("Signup User Success", http.StatusOK, "success", &fiber.Map{"user" : userFormat,"token" : loginToken})
 	c.Status(http.StatusOK).JSON(responses)
 	return nil
 

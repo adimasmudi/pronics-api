@@ -22,7 +22,7 @@ type UserService interface {
 	Login(ctx context.Context, input inputs.LoginUserInput) (models.User, string, error)
 	Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error)
 	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput, fileName string) (*mongo.InsertOneResult, error)
-	Signup(ctx context.Context, googleUser helper.GoogleUser) (string,error)
+	Signup(ctx context.Context, googleUser helper.GoogleUser) (models.User,string,error)
 }
 
 type userService struct {
@@ -224,7 +224,8 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 	return user, token, nil
 }
 
-func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) (string,error){
+func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) (models.User,string,error){
+	var user models.User
 	userExist, _ := s.userRepository.IsUserExist(ctx,googleUser.Email)
 
 	if !userExist{
@@ -241,7 +242,7 @@ func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) 
 	
 	
 		if err != nil{
-			return "", err
+			return user,"", err
 		}
 	
 		newCustomer := models.Customer{
@@ -258,30 +259,23 @@ func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) 
 		fmt.Println(registeredCustomer)
 
 		if err != nil{
-			return "", err
+			return user,"", err
 		}
 
-		token,err := helper.GenerateToken(registeredUser.InsertedID.(primitive.ObjectID))
-
-		if err != nil{
-			return token,err
-		}
-
-		return token, nil
 	}
 
 	userFound, err := s.userRepository.FindByEmail(ctx,googleUser.Email)
 
 	
 	if err != nil{
-		return "", err
+		return userFound,"", err
 	}
 
 	token,err := helper.GenerateToken(userFound.ID)
 
 	if err != nil{
-		return token, err
+		return userFound,"", err
 	}
 
-	return token, nil
+	return userFound,token, nil
 }
