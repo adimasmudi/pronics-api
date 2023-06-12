@@ -61,7 +61,7 @@ func (r *userRepository) IsUserExist(ctx context.Context, email string) (bool, e
 	var user models.User
 
 	err := r.DB.FindOne(ctx, bson.M{"email": email}).Decode(&user)
-
+	
 	if err != nil{
 		return false, err
 	}

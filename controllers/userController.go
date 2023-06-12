@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -112,8 +111,6 @@ func (h *userHandler) Callback(c *fiber.Ctx) error {
 	var googleUser helper.GoogleUser
 
 	json.Unmarshal([]byte(string(contents)), &googleUser)
-
-	fmt.Println("google user",googleUser)
 
 	loginToken, err := h.userService.Signup(ctx,googleUser)
 

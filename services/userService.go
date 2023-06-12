@@ -227,9 +227,6 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) (string,error){
 	userExist, _ := s.userRepository.IsUserExist(ctx,googleUser.Email)
 
-	fmt.Println(googleUser, userExist)
-	fmt.Println("halo")
-
 	if !userExist{
 		newUser := models.User{
 			ID : primitive.NewObjectID(),
