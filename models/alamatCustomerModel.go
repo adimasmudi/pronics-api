@@ -8,8 +8,9 @@ import (
 
 type AlamatCustomer struct {
 	ID primitive.ObjectID `json:"id" bson:"_id"`
-	UserId primitive.ObjectID `json:"user_id" bson:"user_id"`
+	CustomerId primitive.ObjectID `json:"customer_id" bson:"customer_id"`
 	Alamat string `json:"alamat"`
+	IsUtama bool `json:"is_utama"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

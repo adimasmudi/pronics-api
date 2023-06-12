@@ -66,6 +66,7 @@ func (r *userRepository) IsUserExist(ctx context.Context, email string) (bool, e
 		return false, err
 	}
 
+
 	return true, nil
 }
 

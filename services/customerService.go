@@ -23,10 +23,11 @@ type CustomerService interface {
 type customerService struct {
 	userRepository     repositories.UserRepository
 	customerRepository repositories.CustomerRepository
+	alamatCustomerRepository repositories.AlamatCustomerRepository
 }
 
-func NewCustomerService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository) *customerService{
-	return &customerService{userRepository, customerRepository}
+func NewCustomerService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, alamatCustomerRepository repositories.AlamatCustomerRepository) *customerService{
+	return &customerService{userRepository, customerRepository, alamatCustomerRepository}
 }
 
 func (s *customerService) GetCustomerProfile(ctx context.Context, ID primitive.ObjectID) (formatters.CustomerResponse, error){ 
@@ -40,11 +41,28 @@ func (s *customerService) GetCustomerProfile(ctx context.Context, ID primitive.O
 
 	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, user.ID)
 
+	var formatAlamats []formatters.AlamatResponse
+
+	for _, alamatId := range customer.AlamatCustomer{
+		alamat, err := s.alamatCustomerRepository.GetAlamatById(ctx, alamatId)
+
+		if err != nil{
+			return data, err
+		}
+
+		alamatFormat := formatters.AlamatResponse{
+			ID : alamat.ID,
+			Alamat: alamat.Alamat,
+		}
+
+		formatAlamats = append(formatAlamats, alamatFormat)
+	}
+
 	if err != nil {
 		return data, err
 	}
 
-	data = helper.MapperCustomer(user, customer)
+	data = helper.MapperCustomer(user, customer, formatAlamats)
 
 	return data, nil
 }

@@ -5,7 +5,7 @@ import (
 	"pronics-api/models"
 )
 
-func MapperCustomer(user models.User, customer models.Customer) (formatters.CustomerResponse){
+func MapperCustomer(user models.User, customer models.Customer, alamat []formatters.AlamatResponse) (formatters.CustomerResponse){
 	var data formatters.CustomerResponse
 	var userData formatters.UserResponse
 
@@ -19,7 +19,7 @@ func MapperCustomer(user models.User, customer models.Customer) (formatters.Cust
 
 	data.ID = customer.ID
 	data.Username = customer.Username
-	data.Alamat = customer.AlamatCustomer // sementara, harusnya bisa get alamat customer
+	data.Alamat = alamat
 	data.User = userData
 	data.GambarUser = customer.GambarCustomer
 

@@ -113,7 +113,7 @@ func (h *userHandler) Callback(c *fiber.Ctx) error {
 
 	json.Unmarshal([]byte(string(contents)), &googleUser)
 
-	fmt.Println(googleUser)
+	fmt.Println("google user",googleUser)
 
 	loginToken, err := h.userService.Signup(ctx,googleUser)
 

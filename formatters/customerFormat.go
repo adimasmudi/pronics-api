@@ -11,7 +11,7 @@ type CustomerResponse struct{
 	User UserResponse `json:"user_data"`
 	Username string `json:"username"`
 	GambarUser string `json:"gambar_user"`
-	Alamat []string `json:"alamat"`
+	Alamat []AlamatResponse `json:"alamat"`
 }
 
 type CustomerFormatter struct {
