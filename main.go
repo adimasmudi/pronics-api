@@ -58,6 +58,7 @@ func main() {
 	routes.BidangRoute(api, bidangCollection, kategoriCollection)
 	routes.AlamatCustomerRoute(api, alamatCustomerCollection, customerCollection, userCollection)
 	routes.BankRoute(api, bankCollection)
+	routes.RekeningRoute(api, rekeningCollection, bankCollection)
 
 	port := os.Getenv("PORT")
 

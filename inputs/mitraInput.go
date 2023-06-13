@@ -13,7 +13,7 @@ type RegisterMitraInput struct {
 	Wilayah             string `form:"wilayah" binding:"required"`
 	Bidang              string `form:"bidang" binding:"required"`
 	NamaPemilikRekening string `form:"nama_pemilik_rekening" binding:"required"`
-	NamaBank            string `form:"nama_bank" binding:"required"`
+	IdBank              string `form:"id_bank" binding:"required"`
 	NomerRekening       string `form:"nomer_rekening" binding:"required"`
 }
 

@@ -178,7 +178,7 @@ func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{
 		return nil
 	}
 
-	response := helper.APIResponse("User registration success", http.StatusOK, "success", registeredUser)
+	response := helper.APIResponse("Mitra registration success", http.StatusOK, "success", registeredUser)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 	

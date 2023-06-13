@@ -5,12 +5,14 @@ import (
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type BankRepository interface {
 	Save(ctx context.Context, bank models.Bank) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bank, error)
+	GetBankById(ctx context.Context, Id primitive.ObjectID) (models.Bank,  error)
 }
 
 type bankRepository struct{
@@ -58,4 +60,17 @@ func (r *bankRepository) FindAll(ctx context.Context) ([]models.Bank, error){
 	currentRes.Close(ctx)
 
 	return banks, nil
+}
+
+func (r *bankRepository) GetBankById(ctx context.Context, Id primitive.ObjectID) (models.Bank,  error){
+
+	var bank models.Bank
+
+	err := r.DB.FindOne(ctx, bson.M{"_id": Id}).Decode(&bank)
+
+	if err != nil{
+		return bank, err
+	}
+
+	return bank, nil
 }

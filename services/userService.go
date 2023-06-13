@@ -168,10 +168,16 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 		return registeredMitra, err
 	}
 
+	IdBank, err := primitive.ObjectIDFromHex(input.IdBank)
+
+	if err != nil{
+		return registeredMitra, err
+	}
+
 	newRekening := models.Rekening{
 		ID : primitive.NewObjectID(),
 		UserId: registeredUser.InsertedID.(primitive.ObjectID),
-		BankId : primitive.NewObjectID(), // generate id sementara
+		BankId : IdBank, 
 		NamaPemilik: input.NamaPemilikRekening,
 		NomerRekening: input.NomerRekening,
 		CreatedAt: time.Now(),
