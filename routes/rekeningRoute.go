@@ -25,4 +25,5 @@ func RekeningRoute(api fiber.Router, rekeningCollection *mongo.Collection, bankC
 
 	rekening.Get("/detail", middlewares.Auth, rekeningHandler.GetDetailRekening)
 	rekening.Put("/update", middlewares.Auth, rekeningHandler.ChangeDetailRekening)
+	rekening.Post("/Save", middlewares.Auth, rekeningHandler.AddRekening)
 }

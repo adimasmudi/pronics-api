@@ -65,3 +65,30 @@ func (h *rekeningHandler) ChangeDetailRekening(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *rekeningHandler) AddRekening(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	var input inputs.UpdateRekeningInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Add rekening failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	addedRekening, err := h.rekeningService.SaveRekening(ctx, currentUserId, input)
+
+	if err != nil{
+		response := helper.APIResponse("Add rekening failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Add rekening success", http.StatusOK, "success", addedRekening)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
