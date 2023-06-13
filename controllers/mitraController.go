@@ -96,7 +96,52 @@ func (h *mitraHandler) UpdateProfile(c *fiber.Ctx) error {
 	response := helper.APIResponse("Update profil mitra success", http.StatusOK, "success", updatedMitra)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
+}
 
+func (h *mitraHandler) UploadMultipleImagesToGaleri(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
 
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	form, err := c.MultipartForm()
+
+	if err != nil{
+		response := helper.APIResponse("Error upload files", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	images := form.File["galeri_image"]
+
+	fileNames := []string{}
+
+	for _, image := range images{
+		blobFile, err := image.Open()
+
+		if err != nil{
+			response := helper.APIResponse("Error upload files", http.StatusBadRequest, "error", err.Error())
+			c.Status(http.StatusBadRequest).JSON(response)
+			return nil
+		}
+
+		fileName := helper.GenerateFilename(image.Filename)
+
+		err = configs.StorageInit("galeriMitra").UploadFile(blobFile, fileName)
+
+		if err != nil{
+			response := helper.APIResponse("Error upload files", http.StatusBadRequest, "error", err.Error())
+			c.Status(http.StatusBadRequest).JSON(response)
+			return nil
+		}
+
+		fileNames = append(fileNames, fileName)
+	}
+
+	updatedGaleriMitra, err := h.mitraService.UploadGaleriImage(ctx, currentUserId, fileNames)
+
+	response := helper.APIResponse("Upload images to galeri success", http.StatusOK, "success", updatedGaleriMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
 }
 

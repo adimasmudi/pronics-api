@@ -45,6 +45,7 @@ func main() {
 	var ktpMitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "ktpMitras")
 	var alamatCustomerCollection *mongo.Collection = configs.GetCollection(configs.DB, "alamatCustomer")
 	var bankCollection *mongo.Collection = configs.GetCollection(configs.DB, "banks")
+	var galeriMitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "galeriMitra")
 
 	api := app.Group("/api/v1")
 	
@@ -52,7 +53,7 @@ func main() {
 	routes.AdminRoute(api, adminCollection)
 	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection, ktpMitraCollection)
 	routes.CustomerRoute(api, userCollection, customerCollection, alamatCustomerCollection)
-	routes.MitraRoute(api, userCollection, mitraCollection)
+	routes.MitraRoute(api, userCollection, mitraCollection, galeriMitraCollection)
 	routes.KategoriRoute(api, kategoriCollection, bidangCollection)
 	routes.WilayahCakupanRoute(api, wilayahCakupanCollection)
 	routes.BidangRoute(api, bidangCollection, kategoriCollection)

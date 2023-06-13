@@ -2,11 +2,13 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"pronics-api/formatters"
 	"pronics-api/helper"
 	"pronics-api/inputs"
+	"pronics-api/models"
 	"pronics-api/repositories"
 	"time"
 
@@ -18,15 +20,17 @@ import (
 type MitraService interface {
 	GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error)
 	UpdateProfileMitra(ctx context.Context, ID primitive.ObjectID, input inputs.UpdateProfilMitraInput, fileName string) (*mongo.UpdateResult, error)
+	UploadGaleriImage(ctx context.Context, ID primitive.ObjectID, fileNames []string) (*mongo.UpdateResult, error)
 }
 
 type mitraService struct {
 	userRepository     repositories.UserRepository
 	mitraRepository repositories.MitraRepository
+	galeriMitraRepository repositories.GaleriRepository
 }
 
-func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository) *mitraService{
-	return &mitraService{userRepository, mitraRepository}
+func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository) *mitraService{
+	return &mitraService{userRepository, mitraRepository, galeriMitraRepository}
 }
 
 func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error){
@@ -99,4 +103,53 @@ func (s *mitraService) UpdateProfileMitra(ctx context.Context, ID primitive.Obje
 	fmt.Println(updatedMitra)
 
 	return updatedUser, nil
+}
+
+func (s *mitraService) UploadGaleriImage(ctx context.Context, ID primitive.ObjectID, fileNames []string)(*mongo.UpdateResult, error){
+	var newGaleriMitras []primitive.ObjectID
+
+	if len(fileNames) == 0{
+		return nil, errors.New("Tidak ada gambar di upload")
+	}
+
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx,ID)
+
+	if len(mitra.GaleriMitra) > 0{
+		newGaleriMitras = append(newGaleriMitras, mitra.GaleriMitra...)
+	}
+
+	if err != nil{
+		return nil, err
+	}
+
+	for _, fileName := range(fileNames){
+		newGaleriMitra := models.GaleriMitra{
+			ID : primitive.NewObjectID(),
+			MitraId: mitra.ID,
+			Gambar: os.Getenv("CLOUD_STORAGE_READ_LINK")+"galeriMitra/"+fileName,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+
+		addedGaleri, err := s.galeriMitraRepository.Save(ctx, newGaleriMitra)
+
+		if err != nil{
+			return nil, err
+		}
+
+		newGaleriMitras = append(newGaleriMitras, addedGaleri.InsertedID.(primitive.ObjectID))
+	}
+
+	newMitra := bson.M{
+		"galerimitra" : newGaleriMitras,
+		"updatedat" : time.Now(),
+	}
+
+	updatedMitra, err := s.mitraRepository.UpdateProfil(ctx, mitra.ID, newMitra)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return updatedMitra, nil
 }
