@@ -26,7 +26,7 @@ func MapperCustomer(user models.User, customer models.Customer, alamat []formatt
 	return data
 }
 
-func MapperMitra(user models.User, mitra models.Mitra)(formatters.MitraResponse){
+func MapperMitra(user models.User, mitra models.Mitra, wilayah models.WilayahCakupan, bidang []models.Bidang)(formatters.MitraResponse){
 	var data formatters.MitraResponse
 	var userData formatters.UserResponse
 
@@ -44,6 +44,8 @@ func MapperMitra(user models.User, mitra models.Mitra)(formatters.MitraResponse)
 	data.Alamat = mitra.Alamat
 	data.Status = mitra.Status
 	data.User = userData
+	data.Wilayah = wilayah
+	data.Bidang = bidang
 
 	return data
 }

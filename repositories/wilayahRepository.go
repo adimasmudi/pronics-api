@@ -5,12 +5,14 @@ import (
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type WilayahRepository interface {
 	SaveWilayah(ctx context.Context, wilayah models.WilayahCakupan) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.WilayahCakupan, error)
+	FindById(ctx context.Context, ID primitive.ObjectID) (models.WilayahCakupan, error)
 }
 
 type wilayahRepository struct{
@@ -58,4 +60,16 @@ func (r *wilayahRepository) FindAll(ctx context.Context) ([]models.WilayahCakupa
 	currentRes.Close(ctx)
 
 	return wilayahCakupans, nil
+}
+
+func (r *wilayahRepository) FindById(ctx context.Context, ID primitive.ObjectID) (models.WilayahCakupan, error){
+	var wilayah models.WilayahCakupan
+
+	err := r.DB.FindOne(ctx, bson.M{"_id": ID}).Decode(&wilayah)
+	
+	if err != nil{
+		return wilayah, err
+	}
+
+	return wilayah, nil
 }

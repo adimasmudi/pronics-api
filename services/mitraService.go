@@ -27,10 +27,12 @@ type mitraService struct {
 	userRepository     repositories.UserRepository
 	mitraRepository repositories.MitraRepository
 	galeriMitraRepository repositories.GaleriRepository
+	wilayahRepository repositories.WilayahRepository
+	bidangRepository repositories.BidangRepository
 }
 
-func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository) *mitraService{
-	return &mitraService{userRepository, mitraRepository, galeriMitraRepository}
+func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository) *mitraService{
+	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository}
 }
 
 func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error){
@@ -42,13 +44,31 @@ func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectI
 		return data, err
 	}
 
-	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, user.ID)
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, ID)
 
 	if err != nil{
 		return data, err
 	}
 
-	data = helper.MapperMitra(user, mitra)
+	wilayahMitra, err := s.wilayahRepository.FindById(ctx, mitra.Wilayah)
+
+	if err != nil{
+		return data, err
+	}
+
+	var bidangs []models.Bidang
+
+	for _, bidangIdMitra := range mitra.Bidang{
+		bidangMitra, err := s.bidangRepository.GetById(ctx, bidangIdMitra)
+
+		if err != nil{
+			return data, err
+		}
+
+		bidangs = append(bidangs, bidangMitra)
+	}
+
+	data = helper.MapperMitra(user, mitra, wilayahMitra, bidangs)
 
 	return data, nil
 }
@@ -109,7 +129,7 @@ func (s *mitraService) UploadGaleriImage(ctx context.Context, ID primitive.Objec
 	var newGaleriMitras []primitive.ObjectID
 
 	if len(fileNames) == 0{
-		return nil, errors.New("Tidak ada gambar di upload")
+		return nil, errors.New("tidak ada gambar di upload")
 	}
 
 	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx,ID)
