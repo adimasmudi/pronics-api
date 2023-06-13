@@ -12,6 +12,7 @@ import (
 type RekeningRepository interface {
 	SaveRekening(ctx context.Context, rekening models.Rekening) (*mongo.InsertOneResult, error)
 	GetRekeningByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Rekening,  error)
+	UpdateRekening(ctx context.Context, ID primitive.ObjectID, newRekening primitive.M) (*mongo.UpdateResult, error)
 }
 
 type rekeningRepository struct{
@@ -43,4 +44,18 @@ func (r *rekeningRepository) GetRekeningByIdUser(ctx context.Context, IdUser pri
 	}
 
 	return rekening, nil
+}
+
+func (r *rekeningRepository) UpdateRekening(ctx context.Context, ID primitive.ObjectID, newRekening primitive.M) (*mongo.UpdateResult, error){
+	data, err := r.DB.UpdateOne(
+		ctx,
+		bson.M{"_id" : ID},
+		bson.M{"$set" : newRekening},
+	)
+
+	if err != nil{
+		return data, err
+	}
+
+	return data, nil
 }

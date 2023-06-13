@@ -4,6 +4,7 @@ import (
 	"context"
 	"net/http"
 	"pronics-api/helper"
+	"pronics-api/inputs"
 	"pronics-api/services"
 	"time"
 
@@ -38,4 +39,29 @@ func (h *rekeningHandler) GetDetailRekening(c *fiber.Ctx) error{
 	return nil
 }
 
-// func (h *rekeningHandler) ChangeDetailRekening()
+func (h *rekeningHandler) ChangeDetailRekening(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	var input inputs.UpdateRekeningInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Update rekening failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	updatedRekening, err := h.rekeningService.UpdateRekening(ctx, currentUserId, input)
+
+	if err != nil{
+		response := helper.APIResponse("Update rekening failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Update rekening success", http.StatusOK, "success", updatedRekening)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
