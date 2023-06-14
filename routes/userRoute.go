@@ -6,6 +6,7 @@ import (
 	"os"
 	"pronics-api/configs"
 	"pronics-api/controllers"
+	"pronics-api/middlewares"
 	"pronics-api/repositories"
 	"pronics-api/services"
 	"time"
@@ -45,5 +46,6 @@ func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerColle
 	})
 
 	authUser.Get("/callback",userHandler.Callback)
+	authUser.Put("/changePassword", middlewares.Auth, userHandler.ChangePassword)
 
 }

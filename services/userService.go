@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"golang.org/x/crypto/bcrypt"
@@ -23,6 +24,7 @@ type UserService interface {
 	Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error)
 	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput, fileName string) (*mongo.InsertOneResult, error)
 	Signup(ctx context.Context, googleUser helper.GoogleUser) (models.User,string,error)
+	ChangePassword(ctx context.Context, ID primitive.ObjectID, input inputs.ChangePasswordUserInput) (*mongo.UpdateResult, error)
 }
 
 type userService struct {
@@ -284,4 +286,31 @@ func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) 
 	}
 
 	return userFound,token, nil
+}
+
+func (s *userService) ChangePassword(ctx context.Context, ID primitive.ObjectID, input inputs.ChangePasswordUserInput) (*mongo.UpdateResult, error){
+	var newUser primitive.M
+
+	if input.Password != input.ConfirmPassword{
+		return nil, errors.New("password is not some")
+	}
+
+	passwordHash, err := bcrypt.GenerateFromPassword([]byte(input.Password), bcrypt.MinCost)
+
+	if err != nil{
+		return nil, err
+	}
+
+	newUser = bson.M{
+		"password" : passwordHash,
+		"updatedat" : time.Now(), 
+	}
+
+	user, err := s.userRepository.UpdateUser(ctx, ID, newUser)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return user, nil
 }

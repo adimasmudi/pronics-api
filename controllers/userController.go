@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type userHandler struct {
@@ -182,4 +183,31 @@ func (h *userHandler) RegisterMitra(c *fiber.Ctx) error{
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 	
+}
+
+func (h *userHandler) ChangePassword(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	var input inputs.ChangePasswordUserInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Change Password Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	updatedPassword, err := h.userService.ChangePassword(ctx, currentUserId, input)
+
+	if err != nil{
+		response := helper.APIResponse("Change Password Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Change Password success", http.StatusOK, "success", updatedPassword)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
 }
