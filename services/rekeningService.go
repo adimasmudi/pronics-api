@@ -30,6 +30,10 @@ func NewRekeningService(rekeningRepository repositories.RekeningRepository, bank
 
 func (s *rekeningService) SaveRekening(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateRekeningInput) (*mongo.InsertOneResult, error){
 	IdBank, err := primitive.ObjectIDFromHex(input.IdBank)
+
+	if err != nil{
+		return nil, err
+	}
 	newRekening := models.Rekening{
 		ID : primitive.NewObjectID(),
 		UserId: userId,

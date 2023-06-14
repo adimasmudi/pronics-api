@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -75,8 +74,7 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 	}
 
 	userFormat := formatters.FormatUser(user)
-	fmt.Println(user)
-	fmt.Println(userFormat)
+	
 	response := helper.APIResponse("Login success", http.StatusOK, "success", &fiber.Map{ "user" : userFormat,"token" : token})
 	c.Status(http.StatusOK).JSON(response)
 	return nil

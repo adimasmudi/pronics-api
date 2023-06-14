@@ -302,7 +302,7 @@ func (s *userService) ChangePassword(ctx context.Context, ID primitive.ObjectID,
 	}
 
 	newUser = bson.M{
-		"password" : passwordHash,
+		"password" : string(passwordHash),
 		"updatedat" : time.Now(), 
 	}
 

@@ -58,8 +58,6 @@ func (s *bidangService) SaveBidang(ctx context.Context, input inputs.AddBidangIn
 
 	bidangArr = append(bidangArr, bidangAdded.InsertedID.(primitive.ObjectID))
 
-	fmt.Println("arr",bidangArr)
-
 	newBidangInKategori := bson.M{
 		"bidang_id" : bidangArr,
 		"updatedat" : time.Now(),
@@ -67,11 +65,11 @@ func (s *bidangService) SaveBidang(ctx context.Context, input inputs.AddBidangIn
 
 	insertedBidang, err := s.kategoriRepository.AddBidangToKategori(ctx, kategoriBidang.ID, newBidangInKategori)
 
-	fmt.Println(insertedBidang)
-
 	if err != nil{
 		return bidangAdded, err
 	}
+
+	fmt.Println(insertedBidang)
 
 	return bidangAdded, nil
 }

@@ -63,12 +63,12 @@ func main() {
 
 	port := os.Getenv("PORT")
 
-	fmt.Println("dapat port", port)
 	if port == "" {
 		port = "8080"
 	}
 
-	fmt.Println(port)
+	fmt.Println("listen to port :",port)
+
 
 	app.Get("/",func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
