@@ -26,4 +26,5 @@ func AlamatCustomerRoute(api fiber.Router, alamatCustomerCollection *mongo.Colle
 
 	alamat.Post("/save", middlewares.Auth, alamatCustomerHandler.Save)
 	alamat.Get("/all", middlewares.Auth, alamatCustomerHandler.GetAllAlamatCustomer)
+	alamat.Put("/setAsUtama/:alamatId", middlewares.Auth, alamatCustomerHandler.SetAsAlamatUtama)
 }

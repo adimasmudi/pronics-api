@@ -16,6 +16,7 @@ import (
 type AlamatCustomerService interface {
 	SaveAlamat(ctx context.Context, alamat inputs.AddAlamatCustomerInput, userId primitive.ObjectID) (*mongo.InsertOneResult, error)
 	GetAllAlamat(ctx context.Context, ID primitive.ObjectID) ([]models.AlamatCustomer, error)
+	UpdateAlamatUtama(ctx context.Context, IdUser primitive.ObjectID, alamatId primitive.ObjectID) (*mongo.UpdateResult, error)
 }
 
 type alamatCustomerService struct{
@@ -105,3 +106,59 @@ func (s *alamatCustomerService) GetAllAlamat(ctx context.Context, ID primitive.O
 
 	return alamats, nil
 }
+
+// update alamat utama
+func (s *alamatCustomerService) UpdateAlamatUtama(ctx context.Context, IdUser primitive.ObjectID, alamatId primitive.ObjectID) (*mongo.UpdateResult, error){
+	var newAlamatUtama primitive.M
+	var noMoreAlamatUtama primitive.M
+
+	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, IdUser)
+
+	if err != nil{
+		return nil, err
+	}
+
+	currentAlamatUtama, err := s.alamatCustomerRepository.GetAlamatUtamaCustomer(ctx, customer.ID)
+
+	if err != nil{
+		return nil, err
+	}
+
+	alamatToBeUtama, err := s.alamatCustomerRepository.GetAlamatById(ctx, alamatId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	noMoreAlamatUtama = bson.M{
+		"isutama" : false,
+		"updatedat" : time.Now(),
+	}
+
+	newAlamatUtama = bson.M{
+		"isutama" : true,
+		"updatedat" : time.Now(),
+	}
+
+	currentAlamatUpdated, err := s.alamatCustomerRepository.UpdateAlamat(ctx,currentAlamatUtama.ID, noMoreAlamatUtama)
+
+	if err != nil{
+		return nil, err
+	}
+
+	newAlamatUpdated, err := s.alamatCustomerRepository.UpdateAlamat(ctx, alamatToBeUtama.ID, newAlamatUtama)
+
+	if err != nil{
+		return nil, err
+	}
+
+	fmt.Println(currentAlamatUpdated)
+
+	return newAlamatUpdated, nil
+
+	
+}
+
+// update alamat
+
+// delete alamat

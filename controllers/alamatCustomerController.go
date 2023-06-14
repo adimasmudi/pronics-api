@@ -56,12 +56,33 @@ func (h *alamatCustomerHandler) GetAllAlamatCustomer(c *fiber.Ctx) error{
 	allAlamat, err := h.alamatCustomerService.GetAllAlamat(ctx, currentUserId)
 
 	if err != nil{
-		response := helper.APIResponse("Get alll alamat Failed", http.StatusBadRequest, "error", err.Error())
+		response := helper.APIResponse("Get all alamat Failed", http.StatusBadRequest, "error", err.Error())
 		c.Status(http.StatusBadRequest).JSON(response)
 		return nil
 	}
 
 	response := helper.APIResponse("Get all alamat success", http.StatusOK, "success", allAlamat)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+func (h *alamatCustomerHandler) SetAsAlamatUtama(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	alamatId, _ := primitive.ObjectIDFromHex(c.Params("alamatId"))
+
+	updatedAlamat, err := h.alamatCustomerService.UpdateAlamatUtama(ctx,currentUserId, alamatId)
+
+	if err != nil{
+		response := helper.APIResponse("Set alamat as utama Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Set alamat utama success", http.StatusOK, "success", updatedAlamat)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
