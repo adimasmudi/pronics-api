@@ -71,6 +71,8 @@ func (s *alamatCustomerService) SaveAlamat(ctx context.Context, alamat inputs.Ad
 
 	alamatArr = append(alamatArr, newAlamat.ID)
 
+	fmt.Println(alamatArr)
+
 	newAlamatInCustomer := bson.M{
 		"alamatcustomer" : alamatArr,
 		"updatedat" : time.Now(),
