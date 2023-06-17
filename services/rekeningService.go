@@ -82,10 +82,16 @@ func (s *rekeningService) UpdateRekening(ctx context.Context, userId primitive.O
 	if err != nil{
 		return nil, err
 	}
+
+	idBank, err := primitive.ObjectIDFromHex(input.IdBank)
+
+	if err != nil{
+		return nil, err
+	}
 	newRekening := bson.M{
 		"namapemilik" : input.NamaPemilikRekening,
 		"nomerrekening" : input.NomerRekening,
-		"bank_id" : input.IdBank,
+		"bank_id" :idBank,
 	}
 
 	updatedRekening, err := s.rekeningRepository.UpdateRekening(ctx,rekening.ID, newRekening)
