@@ -140,6 +140,12 @@ func (h *mitraHandler) UploadMultipleImagesToGaleri(c *fiber.Ctx) error {
 
 	updatedGaleriMitra, err := h.mitraService.UploadGaleriImage(ctx, currentUserId, fileNames)
 
+	if err != nil{
+		response := helper.APIResponse("Error upload files", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
 	response := helper.APIResponse("Upload images to galeri success", http.StatusOK, "success", updatedGaleriMitra)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
