@@ -13,6 +13,8 @@ type BankRepository interface {
 	Save(ctx context.Context, bank models.Bank) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bank, error)
 	GetBankById(ctx context.Context, Id primitive.ObjectID) (models.Bank,  error)
+	UpdateBank(ctx context.Context, IdBank primitive.ObjectID, newBank primitive.M) (*mongo.UpdateResult, error)
+	DeleteBank(ctx context.Context, IdBank primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
 type bankRepository struct{
@@ -73,4 +75,24 @@ func (r *bankRepository) GetBankById(ctx context.Context, Id primitive.ObjectID)
 	}
 
 	return bank, nil
+}
+
+func (r *bankRepository) UpdateBank(ctx context.Context, IdBank primitive.ObjectID, newBank primitive.M) (*mongo.UpdateResult, error){
+	result, err := r.DB.UpdateOne(ctx, bson.M{"_id" : IdBank},bson.M{"$set" : newBank})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (r *bankRepository) DeleteBank(ctx context.Context, IdBank primitive.ObjectID) (*mongo.DeleteResult, error){
+	result, err := r.DB.DeleteOne(ctx,bson.M{"_id":IdBank})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
 }

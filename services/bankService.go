@@ -8,6 +8,7 @@ import (
 	"pronics-api/repositories"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 )
@@ -15,6 +16,8 @@ import (
 type BankService interface {
 	SaveBank(ctx context.Context, input inputs.AddBankInput, fileName string) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bank, error)
+	GetDetail(ctx context.Context, bankId primitive.ObjectID) (models.Bank, error)
+	UpdateBank(ctx context.Context, bankId primitive.ObjectID, input inputs.AddBankInput, fileName string) (*mongo.UpdateResult, error)
 }
 
 type bankService struct{
@@ -60,4 +63,44 @@ func (s *bankService) FindAll(ctx context.Context) ([]models.Bank, error){
 	}
 
 	return allBank, nil
+}
+
+func (s *bankService) GetDetail(ctx context.Context, bankId primitive.ObjectID) (models.Bank, error){
+	bank, err := s.bankRepository.GetBankById(ctx, bankId)
+
+	if err != nil{
+		return bank, err
+	}
+
+	return bank, nil
+}
+
+func (s *bankService) UpdateBank(ctx context.Context, bankId primitive.ObjectID, input inputs.AddBankInput, fileName string) (*mongo.UpdateResult, error){
+	var newBank primitive.M
+
+	bank, err := s.bankRepository.GetBankById(ctx, bankId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	if fileName == ""{
+		fileName = bank.LogoBank
+	}else{
+		fileName = os.Getenv("CLOUD_STORAGE_READ_LINK")+"bank/"+fileName
+	}
+
+	newBank = bson.M{
+		"namabank" : input.NamaBank,
+		"logobank" : fileName,
+		"updatedat" : time.Now(),
+	}
+
+	updatedBank, err := s.bankRepository.UpdateBank(ctx, bankId,newBank)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return updatedBank, nil
 }
