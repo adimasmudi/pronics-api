@@ -18,6 +18,7 @@ type BankService interface {
 	FindAll(ctx context.Context) ([]models.Bank, error)
 	GetDetail(ctx context.Context, bankId primitive.ObjectID) (models.Bank, error)
 	UpdateBank(ctx context.Context, bankId primitive.ObjectID, input inputs.AddBankInput, fileName string) (*mongo.UpdateResult, error)
+	DeleteBank(ctx context.Context, bankId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
 type bankService struct{
@@ -103,4 +104,14 @@ func (s *bankService) UpdateBank(ctx context.Context, bankId primitive.ObjectID,
 	}
 
 	return updatedBank, nil
+}
+
+func (s *bankService) DeleteBank(ctx context.Context, bankId primitive.ObjectID) (*mongo.DeleteResult, error){
+	deletedBank, err := s.bankRepository.DeleteBank(ctx, bankId)
+
+	if err != nil{
+		return deletedBank, err
+	}
+
+	return deletedBank, nil
 }

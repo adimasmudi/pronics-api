@@ -26,4 +26,5 @@ func BankRoute(api fiber.Router, bankCollection *mongo.Collection) {
 	bank.Get("/all", bankHandler.FindAll)
 	bank.Get("/detail/:bankId", middlewares.Auth,bankHandler.FindById)
 	bank.Put("/update/:bankId", middlewares.Auth, bankHandler.UpdateBank)
+	bank.Delete("/delete/:bankId", middlewares.Auth, bankHandler.DeleteBank)
 }
