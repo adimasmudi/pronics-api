@@ -99,3 +99,23 @@ func (h *bidangHandler) UpdateBidang(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+// delete bidang
+func (h *bidangHandler) DeleteBidang(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	bidangId,_ := primitive.ObjectIDFromHex(c.Params("bidangId"))
+
+	deletedBidang, err := h.bidangService.DeleteBidang(ctx, bidangId)
+
+	if err != nil{
+		response := helper.APIResponse("Delete bidang failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Delete bidang success", http.StatusOK, "success", deletedBidang)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

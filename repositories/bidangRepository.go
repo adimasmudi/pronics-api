@@ -14,6 +14,7 @@ type BidangRepository interface {
 	FindAll(ctx context.Context) ([]models.Bidang, error)
 	GetById(ctx context.Context, ID primitive.ObjectID) (models.Bidang, error)
 	UpdateBidang(ctx context.Context, IdBidang primitive.ObjectID, newBidang primitive.M) (*mongo.UpdateResult, error)
+	DeleteBidang(ctx context.Context, IdBidang primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
 type bidangRepository struct{

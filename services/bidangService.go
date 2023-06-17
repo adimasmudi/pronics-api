@@ -17,6 +17,7 @@ type BidangService interface {
 	SaveBidang(ctx context.Context, input inputs.AddBidangInput, creator_id primitive.ObjectID) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bidang, error)
 	UpdateBidang(ctx context.Context, editor_id primitive.ObjectID, bidangId primitive.ObjectID, input inputs.AddBidangInput) (*mongo.UpdateResult, error)
+	DeleteBidang(ctx context.Context, bidangId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
 type bidangService struct{
@@ -166,4 +167,51 @@ func (s *bidangService) UpdateBidang(ctx context.Context, editor_id primitive.Ob
 	}
 
 	return updatedBidang, nil
+}
+
+func (s *bidangService) DeleteBidang(ctx context.Context, bidangId primitive.ObjectID) (*mongo.DeleteResult, error){
+	
+	bidang, err := s.bidangRepository.GetById(ctx, bidangId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	oldBidangInKategoriArr := []primitive.ObjectID{}
+
+	for _, item := range kategori.BidangId{
+		if item != bidang.ID{
+			oldBidangInKategoriArr = append(oldBidangInKategoriArr, item)
+		}
+	}
+
+	var oldKategoriUpdate primitive.M
+
+	oldKategoriUpdate = bson.M{
+		"bidang_id" : oldBidangInKategoriArr,
+		"updatedat" : time.Now(),
+	}
+
+	oldUpdated, err := s.kategoriRepository.AddBidangToKategori(ctx, kategori.ID,oldKategoriUpdate)
+
+	if err != nil{
+		return nil, err
+	}
+
+	fmt.Println(oldUpdated)
+
+
+	deletedBidang, err := s.bidangRepository.DeleteBidang(ctx, bidangId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return deletedBidang, nil
 }
