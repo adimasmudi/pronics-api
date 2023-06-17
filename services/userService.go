@@ -147,6 +147,7 @@ func (s *userService) RegisterMitra(ctx context.Context, input inputs.RegisterMi
 	var bidangMitra []primitive.ObjectID
 
 	for _, bidang := range bidangArr{
+		bidang = strings.TrimSpace(bidang)
 		eachBidang, _ := primitive.ObjectIDFromHex(bidang)
 		bidangMitra = append(bidangMitra, eachBidang)
 	}
