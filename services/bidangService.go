@@ -16,7 +16,7 @@ import (
 type BidangService interface {
 	SaveBidang(ctx context.Context, input inputs.AddBidangInput, creator_id primitive.ObjectID) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bidang, error)
-	
+	UpdateBidang(ctx context.Context, editor_id primitive.ObjectID, bidangId primitive.ObjectID, input inputs.AddBidangInput) (*mongo.UpdateResult, error)
 }
 
 type bidangService struct{
@@ -82,4 +82,88 @@ func (s *bidangService) FindAll(ctx context.Context) ([]models.Bidang, error){
 	}
 
 	return allBidang, nil
+}
+
+func (s *bidangService) UpdateBidang(ctx context.Context, editor_id primitive.ObjectID, bidangId primitive.ObjectID, input inputs.AddBidangInput) (*mongo.UpdateResult, error){
+	var newBidang primitive.M
+
+	currentBidang, err := s.bidangRepository.GetById(ctx, bidangId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	newBidang = bson.M{
+		"namabidang" : input.NamaBidang,
+		"kategori_id" : input.KategoriId,
+		"createdbyid" : editor_id,
+		"updatedat" : time.Now(),
+	}
+
+	if currentBidang.KategoriId != input.KategoriId{
+		// update old kategori
+		oldKategori, err := s.kategoriRepository.GetById(ctx, currentBidang.KategoriId)
+		oldBidangInKategoriArr := []primitive.ObjectID{}
+
+		if err != nil{
+			return nil, err
+		}
+
+		for _, item := range oldKategori.BidangId{
+			if item != currentBidang.ID{
+				oldBidangInKategoriArr = append(oldBidangInKategoriArr, item)
+			}
+		}
+
+		var oldKategoriUpdate primitive.M
+
+		oldKategoriUpdate = bson.M{
+			"bidang_id" : oldBidangInKategoriArr,
+			"updatedat" : time.Now(),
+		}
+
+		oldUpdated, err := s.kategoriRepository.AddBidangToKategori(ctx, oldKategori.ID,oldKategoriUpdate)
+
+		if err != nil{
+			return nil, err
+		}
+
+		fmt.Println(oldUpdated)
+
+		// ambil kategori baru
+		newKategori, err := s.kategoriRepository.GetById(ctx, input.KategoriId)
+
+		if err != nil{
+			return nil, err
+		}
+
+		newKategoriBidangArr := []primitive.ObjectID{}
+		newKategoriBidangArr = append(newKategoriBidangArr, newKategori.BidangId...)
+		newKategoriBidangArr = append(newKategoriBidangArr, currentBidang.ID)
+
+		// update dengan masukkan id bidang yang sekarang ke kategori lama
+
+		var newKategoriUpdate primitive.M
+
+		newKategoriUpdate = bson.M{
+			"bidang_id" : newKategoriBidangArr,
+			"updatedat" : time.Now(),
+		}
+
+		newUpdated, err := s.kategoriRepository.AddBidangToKategori(ctx, newKategori.ID,newKategoriUpdate)
+
+		if err != nil{
+			return nil, err
+		}
+
+		fmt.Println(newUpdated)
+	}
+
+	updatedBidang, err := s.bidangRepository.UpdateBidang(ctx, bidangId, newBidang)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return updatedBidang, nil
 }

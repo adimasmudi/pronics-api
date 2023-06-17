@@ -69,3 +69,33 @@ func (h *bidangHandler) FindAll(c *fiber.Ctx) error{
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+// update bidang
+func (h *bidangHandler) UpdateBidang(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	bidangId,_ := primitive.ObjectIDFromHex(c.Params("bidangId"))
+
+	var input inputs.AddBidangInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Update bidang failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	updatedBidang, err := h.bidangService.UpdateBidang(ctx, currentUserId,bidangId, input)
+
+	if err != nil{
+		response := helper.APIResponse("Update bidang failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Update bidang success", http.StatusOK, "success", updatedBidang)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

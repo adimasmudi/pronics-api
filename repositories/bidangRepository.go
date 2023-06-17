@@ -13,6 +13,7 @@ type BidangRepository interface {
 	SaveBidang(ctx context.Context, bidang models.Bidang) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bidang, error)
 	GetById(ctx context.Context, ID primitive.ObjectID) (models.Bidang, error)
+	UpdateBidang(ctx context.Context, IdBidang primitive.ObjectID, newBidang primitive.M) (*mongo.UpdateResult, error)
 }
 
 type bidangRepository struct{
@@ -71,4 +72,24 @@ func (r *bidangRepository) GetById(ctx context.Context, ID primitive.ObjectID) (
 	}
 
 	return bidang, nil
+}
+
+func (r *bidangRepository) UpdateBidang(ctx context.Context, IdBidang primitive.ObjectID, newBidang primitive.M) (*mongo.UpdateResult, error){
+	result, err := r.DB.UpdateOne(ctx,bson.M{"_id":IdBidang},bson.M{"$set" : newBidang})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
+}
+
+func (r *bidangRepository) DeleteBidang(ctx context.Context, IdBidang primitive.ObjectID) (*mongo.DeleteResult, error){
+	result, err := r.DB.DeleteOne(ctx,bson.M{"_id":IdBidang})
+
+	if err != nil{
+		return result, err
+	}
+
+	return result, nil
 }
