@@ -25,6 +25,7 @@ func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriC
 
 	bidang.Post("/save", middlewares.Auth, bidangHandler.Save)
 	bidang.Get("/all", bidangHandler.FindAll)
+	bidang.Get("/detail/:bidangId", bidangHandler.FindById)
 	bidang.Put("/update/:bidangId", middlewares.Auth, bidangHandler.UpdateBidang)
 	bidang.Delete("/delete/:bidangId", middlewares.Auth, bidangHandler.DeleteBidang)
 }

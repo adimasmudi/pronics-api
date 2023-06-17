@@ -16,6 +16,7 @@ import (
 type BidangService interface {
 	SaveBidang(ctx context.Context, input inputs.AddBidangInput, creator_id primitive.ObjectID) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Bidang, error)
+	FindById(ctx context.Context, bidangId primitive.ObjectID) (models.Bidang, error)
 	UpdateBidang(ctx context.Context, editor_id primitive.ObjectID, bidangId primitive.ObjectID, input inputs.AddBidangInput) (*mongo.UpdateResult, error)
 	DeleteBidang(ctx context.Context, bidangId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
@@ -84,6 +85,17 @@ func (s *bidangService) FindAll(ctx context.Context) ([]models.Bidang, error){
 
 	return allBidang, nil
 }
+
+func (s *bidangService) FindById(ctx context.Context, bidangId primitive.ObjectID) (models.Bidang, error){
+	bidang, err := s.bidangRepository.GetById(ctx, bidangId)
+
+	if err != nil{
+		return bidang, err
+	}
+
+	return bidang, nil
+}
+
 
 func (s *bidangService) UpdateBidang(ctx context.Context, editor_id primitive.ObjectID, bidangId primitive.ObjectID, input inputs.AddBidangInput) (*mongo.UpdateResult, error){
 	var newBidang primitive.M

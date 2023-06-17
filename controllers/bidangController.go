@@ -70,6 +70,26 @@ func (h *bidangHandler) FindAll(c *fiber.Ctx) error{
 	return nil
 }
 
+// get bidang by id
+func (h *bidangHandler) FindById(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	bidangId,_ := primitive.ObjectIDFromHex(c.Params("bidangId"))
+
+	bidang, err := h.bidangService.FindById(ctx, bidangId)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to get bidang", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get bidang success", http.StatusOK, "success", bidang)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
 // update bidang
 func (h *bidangHandler) UpdateBidang(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
