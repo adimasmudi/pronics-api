@@ -27,3 +27,7 @@ type UpdateProfilMitraInput struct {
 	NamaToko     string `form:"nama_toko"`
 	Alamat       string `form:"alamat" binding:"required"`
 }
+
+type UpdateBidangMitraInput struct {
+	Bidang string `json:"bidang" binding:"required"`
+}

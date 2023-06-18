@@ -29,5 +29,6 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute.Get("/profile", middlewares.Auth, mitraHandler.GetProfile)
 	mitraRoute.Put("/profile/update", middlewares.Auth, mitraHandler.UpdateProfile)
 	mitraRoute.Put("/galeri/upload", middlewares.Auth, mitraHandler.UploadMultipleImagesToGaleri)
-
+	mitraRoute.Put("/updateBidang", middlewares.Auth, mitraHandler.UpdateBidang)
+	mitraRoute.Get("/getBidangs",middlewares.Auth, mitraHandler.GetBidangMitra)
 }

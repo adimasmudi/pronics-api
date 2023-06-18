@@ -10,6 +10,7 @@ import (
 	"pronics-api/inputs"
 	"pronics-api/models"
 	"pronics-api/repositories"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,6 +22,8 @@ type MitraService interface {
 	GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error)
 	UpdateProfileMitra(ctx context.Context, ID primitive.ObjectID, input inputs.UpdateProfilMitraInput, fileName string) (*mongo.UpdateResult, error)
 	UploadGaleriImage(ctx context.Context, ID primitive.ObjectID, fileNames []string) (*mongo.UpdateResult, error)
+	GetAllBidangMitra(ctx context.Context, userId primitive.ObjectID) ([]formatters.BidangResponse, error)
+	UpdateBidang(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateBidangMitraInput) (*mongo.UpdateResult, error)
 }
 
 type mitraService struct {
@@ -162,6 +165,70 @@ func (s *mitraService) UploadGaleriImage(ctx context.Context, ID primitive.Objec
 
 	newMitra := bson.M{
 		"galerimitra" : newGaleriMitras,
+		"updatedat" : time.Now(),
+	}
+
+	updatedMitra, err := s.mitraRepository.UpdateProfil(ctx, mitra.ID, newMitra)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return updatedMitra, nil
+}
+
+func (s *mitraService) GetAllBidangMitra(ctx context.Context, userId primitive.ObjectID) ([]formatters.BidangResponse, error){
+	var allBidangMitras []formatters.BidangResponse
+
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	for _, bidangId := range mitra.Bidang{
+		var bidangResponse formatters.BidangResponse
+
+		bidang, err := s.bidangRepository.GetById(ctx, bidangId)
+
+		if err != nil{
+			return nil, err
+		}
+
+		bidangResponse.ID = bidang.ID
+		bidangResponse.NamaBidang = bidang.NamaBidang
+
+		allBidangMitras = append(allBidangMitras, bidangResponse)
+	}
+
+	return allBidangMitras, nil
+}
+
+func (s *mitraService) UpdateBidang(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateBidangMitraInput) (*mongo.UpdateResult, error){
+	var newMitra primitive.M
+
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	bidangStrArr := input.Bidang
+	bidangStr := strings.TrimSpace(bidangStrArr)
+	bidangStr = strings.Replace(bidangStr, "[", "", -1)
+	bidangStr = strings.Replace(bidangStr, "]", "", -1)
+	bidangArr := strings.Split(bidangStr, ",")
+
+	var bidangMitra []primitive.ObjectID
+
+	for _, bidang := range bidangArr{
+		bidang = strings.Trim(bidang," ")
+		eachBidang, _ := primitive.ObjectIDFromHex(bidang)
+		bidangMitra = append(bidangMitra, eachBidang)
+	}
+
+	newMitra = bson.M{
+		"bidang" : bidangMitra,
 		"updatedat" : time.Now(),
 	}
 

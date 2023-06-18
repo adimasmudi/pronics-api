@@ -151,3 +151,49 @@ func (h *mitraHandler) UploadMultipleImagesToGaleri(c *fiber.Ctx) error {
 	return nil
 }
 
+func (h *mitraHandler) GetBidangMitra(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	bidangMitra, err := h.mitraService.GetAllBidangMitra(ctx, currentUserId)
+
+	if err != nil {
+		response := helper.APIResponse("Get bidang mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get bidang mitra success", http.StatusOK, "success", bidangMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+func (h *mitraHandler) UpdateBidang(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	var input inputs.UpdateBidangMitraInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Update bidang mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	updatedMitra, err := h.mitraService.UpdateBidang(ctx, currentUserId, input)
+
+	if err != nil {
+		response := helper.APIResponse("Update bidang mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Update bidang mitra success", http.StatusOK, "success", updatedMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
