@@ -9,12 +9,12 @@ import (
 type OrderPayment struct {
 	ID primitive.ObjectID `json:"id" bson:"_id"`
 	OrderDetailId primitive.ObjectID `json:"order_detail_id" bson:"order_detail_id"`
-	BiayaPelayanan int64 `json:"biaya_pelayanan"`
-	BiayaPerjalanan int64 `json:"biaya_perjalanan"`
-	Diskon int64 `json:"diskon"`
-	BiayaAplikasi int64 `json:"biaya_aplikasi"`
-	TotalBiaya int64 `json:"total_biaya"`
-	BiayaAfterDiskon int64 `json:"biaya_after_diskon"`
+	BiayaPelayanan float64 `json:"biaya_pelayanan"`
+	BiayaPerjalanan float64 `json:"biaya_perjalanan"`
+	Diskon float64 `json:"diskon"`
+	BiayaAplikasi float64 `json:"biaya_aplikasi"`
+	TotalBiaya float64 `json:"total_biaya"`
+	BiayaAfterDiskon float64 `json:"biaya_after_diskon"`
 	MetodePembayaran string `json:"metode_pembayaran"`
 	BuktiBayar string `json:"bukti_bayar"`
 	CreatedAt     time.Time `json:"created_at"`

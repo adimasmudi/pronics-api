@@ -46,6 +46,7 @@ func main() {
 	var alamatCustomerCollection *mongo.Collection = configs.GetCollection(configs.DB, "alamatCustomer")
 	var bankCollection *mongo.Collection = configs.GetCollection(configs.DB, "banks")
 	var galeriMitraCollection *mongo.Collection = configs.GetCollection(configs.DB, "galeriMitra")
+	var layananCollection *mongo.Collection = configs.GetCollection(configs.DB, "layanans")
 
 	api := app.Group("/api/v1")
 	
@@ -60,6 +61,7 @@ func main() {
 	routes.AlamatCustomerRoute(api, alamatCustomerCollection, customerCollection, userCollection)
 	routes.BankRoute(api, bankCollection)
 	routes.RekeningRoute(api, rekeningCollection, bankCollection)
+	routes.LayananRoute(api, layananCollection, bidangCollection)
 
 	port := os.Getenv("PORT")
 

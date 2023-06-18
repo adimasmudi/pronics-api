@@ -11,7 +11,7 @@ type LayananMitra struct {
 	BidangId primitive.ObjectID `json:"bidang_id" bson:"bidang_id"`
 	MitraId primitive.ObjectID `json:"mitra_id" bson:"mitra_id"`
 	NamaLayanan string `json:"nama_layanan"`
-	Harga int64 `json:"harga"`
+	Harga float64 `json:"harga"`
 	AvailableTakeDelivery bool `json:"available_take_delivery"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
