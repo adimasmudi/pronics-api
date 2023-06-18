@@ -26,4 +26,5 @@ func LayananRoute(api fiber.Router, layananCollection *mongo.Collection, bidangC
 	layanan.Post("/save", middlewares.Auth, layananHandler.Save)
 	layanan.Get("/all",layananHandler.FindAll)
 	layanan.Get("/detail/:layananId", layananHandler.FindById)
+	layanan.Delete("/delete/:layananId", middlewares.Auth, layananHandler.DeleteLayanan)
 }

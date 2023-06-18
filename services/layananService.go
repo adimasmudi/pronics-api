@@ -17,6 +17,7 @@ type LayananService interface {
 	SaveLayanan(ctx context.Context, input inputs.AddLayananInput) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Layanan, error)
 	FindById(ctx context.Context, layananId primitive.ObjectID) (models.Layanan, error)
+	DeleteLayanan(ctx context.Context, layananId primitive.ObjectID)(*mongo.DeleteResult, error)
 }
 
 type layananService struct{
@@ -94,4 +95,49 @@ func (s *layananService) FindById(ctx context.Context, layananId primitive.Objec
 	}
 
 	return layanan, nil
+}
+
+func (s *layananService) DeleteLayanan(ctx context.Context, layananId primitive.ObjectID)(*mongo.DeleteResult, error){
+	layanan, err := s.layananRepository.GetById(ctx, layananId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	bidang, err := s.bidangRepository.GetById(ctx, layanan.BidangId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	oldLayananInBidangArr := []primitive.ObjectID{}
+
+	for _, item := range bidang.LayananId{
+		if item != layanan.ID{
+			oldLayananInBidangArr = append(oldLayananInBidangArr, item)
+		}
+	}
+
+	var oldBidangUpdate primitive.M
+
+	oldBidangUpdate = bson.M{
+		"layanan_id" : oldLayananInBidangArr,
+		"updatedat" : time.Now(),
+	}
+
+	oldUpdated, err := s.bidangRepository.UpdateBidang(ctx, bidang.ID,oldBidangUpdate)
+
+	if err != nil{
+		return nil, err
+	}
+
+	fmt.Println(oldUpdated)
+
+	deletedLayanan, err := s.layananRepository.DeleteLayanan(ctx, layananId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return deletedLayanan, nil
 }

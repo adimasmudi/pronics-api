@@ -81,3 +81,22 @@ func (h *layananHandler) FindById(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *layananHandler) DeleteLayanan(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	layananId,_ := primitive.ObjectIDFromHex(c.Params("layananId"))
+
+	deletedLayanan, err := h.layananService.DeleteLayanan(ctx, layananId)
+
+	if err != nil{
+		response := helper.APIResponse("Delete layanan failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Delete layanan success", http.StatusOK, "success", deletedLayanan)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
