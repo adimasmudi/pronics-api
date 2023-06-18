@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type layananHandler struct {
@@ -43,4 +44,40 @@ func (h *layananHandler) Save(c *fiber.Ctx) error{
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 	
+}
+
+func (h *layananHandler) FindAll(c *fiber.Ctx) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	allLayanan, err := h.layananService.FindAll(ctx)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to get all layanan", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get all layanan success", http.StatusOK, "success", allLayanan)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+func (h *layananHandler) FindById(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	layananId,_ := primitive.ObjectIDFromHex(c.Params("layananId"))
+
+	layanan, err := h.layananService.FindById(ctx, layananId)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to get layanan", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get layanan success", http.StatusOK, "success", layanan)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
 }

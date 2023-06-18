@@ -15,7 +15,8 @@ import (
 
 type LayananService interface {
 	SaveLayanan(ctx context.Context, input inputs.AddLayananInput) (*mongo.InsertOneResult, error)
-	
+	FindAll(ctx context.Context) ([]models.Layanan, error)
+	FindById(ctx context.Context, layananId primitive.ObjectID) (models.Layanan, error)
 }
 
 type layananService struct{
@@ -73,4 +74,24 @@ func (s *layananService) SaveLayanan(ctx context.Context, input inputs.AddLayana
 	fmt.Println(insertedLayanan)
 	
 	return layananAdded, nil
+}
+
+func (s *layananService) FindAll(ctx context.Context) ([]models.Layanan, error){
+	allLayanan, err := s.layananRepository.FindAll(ctx)
+
+	if err != nil{
+		return allLayanan, err
+	}
+
+	return allLayanan, nil
+}
+
+func (s *layananService) FindById(ctx context.Context, layananId primitive.ObjectID) (models.Layanan, error){
+	layanan, err := s.layananRepository.GetById(ctx, layananId)
+
+	if err != nil{
+		return layanan, err
+	}
+
+	return layanan, nil
 }
