@@ -46,11 +46,13 @@ func (h *layananHandler) Save(c *fiber.Ctx) error{
 	
 }
 
-func (h *layananHandler) FindAll(c *fiber.Ctx) error{
+func (h *layananHandler) FindAllByBidang(c *fiber.Ctx) error{
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	allLayanan, err := h.layananService.FindAll(ctx)
+	bidangId,_ := primitive.ObjectIDFromHex(c.Params("bidangId"))
+
+	allLayanan, err := h.layananService.FindAllByBidangId(ctx, bidangId)
 
 	if err != nil{
 		response := helper.APIResponse("Failed to get all layanan", http.StatusBadRequest, "error", err.Error())
