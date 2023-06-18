@@ -23,6 +23,7 @@ func NewLayananMitraService(layananMitraRepository repositories.LayananMitraRepo
 	return &layananMitraService{layananMitraRepository, bidangRepository, mitraRepository}
 }
 
+// add layanan mitra
 // func (s *layananMitraService) Save(ctx context.Context, input inputs.AddLayananInput, userId primitive.ObjectID) (*mongo.InsertOneResult, error){
 // 	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
 
@@ -43,3 +44,9 @@ func NewLayananMitraService(layananMitraRepository repositories.LayananMitraRepo
 
 
 // }
+
+// get all layanan mitra by bidang by mitra
+
+// get layanan mitra by id
+
+// delete layanan mitra
