@@ -63,6 +63,7 @@ func main() {
 	routes.BankRoute(api, bankCollection)
 	routes.RekeningRoute(api, rekeningCollection, bankCollection)
 	routes.LayananRoute(api, layananCollection, bidangCollection)
+	routes.LayananMitraRoute(api, layananMitraCollection,bidangCollection, mitraCollection)
 
 	port := os.Getenv("PORT")
 
