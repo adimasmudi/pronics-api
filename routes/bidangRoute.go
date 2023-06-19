@@ -10,13 +10,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection){
+func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection){
 	// repositories
 	bidangRepository := repositories.NewBidangRepository(bidangCollection)
 	kategoriRepository := repositories.NewKategoriRepository(kategoriCollection)
+	layananRepository := repositories.NewLayananRepository(layananCollection)
 
 	// services
-	bidangService := services.NewbidangService(bidangRepository, kategoriRepository)
+	bidangService := services.NewbidangService(bidangRepository, kategoriRepository, layananRepository)
 
 	// controllers
 	bidangHandler := controllers.NewbidangHandler(bidangService)

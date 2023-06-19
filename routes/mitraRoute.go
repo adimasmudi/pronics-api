@@ -10,16 +10,19 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollection *mongo.Collection, galeriMitraCollection *mongo.Collection, wilayahCollection *mongo.Collection, bidangCollection *mongo.Collection) {
+func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollection *mongo.Collection, galeriMitraCollection *mongo.Collection, wilayahCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
 	mitraRepository := repositories.NewMitraRepository(mitraCollection)
 	galeriMitraRepository := repositories.NewGaleriRepository(galeriMitraCollection)
 	bidangRepository := repositories.NewBidangRepository(bidangCollection)
 	wilayahRepository := repositories.NewWilayahRepository(wilayahCollection)
+	kategoriRepository := repositories.NewKategoriRepository(kategoriCollection)
+	layananRepository := repositories.NewLayananRepository(layananCollection)
+	layananMitraRepository := repositories.NewLayananMitraRepository(layananMitraCollection)
 	
 	// services
-	mitraService := services.NewMitraService(userRepository, mitraRepository, galeriMitraRepository, wilayahRepository,bidangRepository)
+	mitraService := services.NewMitraService(userRepository, mitraRepository, galeriMitraRepository, wilayahRepository,bidangRepository, kategoriRepository, layananRepository, layananMitraRepository)
 
 	// controllers
 	mitraHandler := controllers.NewMitraHandler(mitraService)
@@ -31,4 +34,5 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute.Put("/galeri/upload", middlewares.Auth, mitraHandler.UploadMultipleImagesToGaleri)
 	mitraRoute.Put("/updateBidang", middlewares.Auth, mitraHandler.UpdateBidang)
 	mitraRoute.Get("/getBidangs",middlewares.Auth, mitraHandler.GetBidangMitra)
+	mitraRoute.Get("/getBidang/detail/:bidangId", middlewares.Auth, mitraHandler.DetailBidangMitra)
 }

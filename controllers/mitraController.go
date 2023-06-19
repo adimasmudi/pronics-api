@@ -197,3 +197,24 @@ func (h *mitraHandler) UpdateBidang(c *fiber.Ctx) error {
 	return nil
 }
 
+// detail bidang
+func (h *mitraHandler) DetailBidangMitra(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	bidangId, _ := primitive.ObjectIDFromHex(c.Params("bidangId"))
+
+	bidangMitra, err := h.mitraService.DetailBidang(ctx, currentUserId, bidangId)
+
+	if err != nil {
+		response := helper.APIResponse("Get bidang mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get bidang mitra success", http.StatusOK, "success", bidangMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

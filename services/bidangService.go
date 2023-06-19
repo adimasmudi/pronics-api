@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"fmt"
+	"pronics-api/formatters"
 	"pronics-api/inputs"
 	"pronics-api/models"
 	"pronics-api/repositories"
@@ -15,8 +16,8 @@ import (
 
 type BidangService interface {
 	SaveBidang(ctx context.Context, input inputs.AddBidangInput, creator_id primitive.ObjectID) (*mongo.InsertOneResult, error)
-	FindAll(ctx context.Context) ([]models.Bidang, error)
-	FindById(ctx context.Context, bidangId primitive.ObjectID) (models.Bidang, error)
+	FindAll(ctx context.Context) ([]formatters.BidangResponse, error)
+	FindById(ctx context.Context, bidangId primitive.ObjectID) (formatters.DetailBidangResponse, error)
 	UpdateBidang(ctx context.Context, editor_id primitive.ObjectID, bidangId primitive.ObjectID, input inputs.AddBidangInput) (*mongo.UpdateResult, error)
 	DeleteBidang(ctx context.Context, bidangId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
@@ -24,10 +25,11 @@ type BidangService interface {
 type bidangService struct{
 	bidangRepository repositories.BidangRepository
 	kategoriRepository repositories.KategoriRepository
+	layananRepository repositories.LayananRepository
 }
 
-func NewbidangService(bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository) *bidangService{
-	return &bidangService{bidangRepository, kategoriRepository}
+func NewbidangService(bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository) *bidangService{
+	return &bidangService{bidangRepository, kategoriRepository, layananRepository}
 }
 
 func (s *bidangService) SaveBidang(ctx context.Context, input inputs.AddBidangInput, creator_id primitive.ObjectID) (*mongo.InsertOneResult, error){
@@ -76,24 +78,71 @@ func (s *bidangService) SaveBidang(ctx context.Context, input inputs.AddBidangIn
 	return bidangAdded, nil
 }
 
-func (s *bidangService) FindAll(ctx context.Context) ([]models.Bidang, error){
+func (s *bidangService) FindAll(ctx context.Context) ([]formatters.BidangResponse, error){
+	var BidangResponses []formatters.BidangResponse
+	var BidangResponse formatters.BidangResponse
+
 	allBidang, err := s.bidangRepository.FindAll(ctx)
 
 	if err != nil{
-		return allBidang, err
+		return BidangResponses, err
 	}
 
-	return allBidang, nil
+	for _, bidang := range allBidang{
+		kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
+
+		if err != nil{
+			return BidangResponses, err
+		}
+
+
+		BidangResponse.ID = bidang.ID
+		BidangResponse.NamaBidang = bidang.NamaBidang
+		BidangResponse.Kategori = kategori.NamaKategori
+
+		BidangResponses = append(BidangResponses, BidangResponse)
+	}
+
+	return BidangResponses, nil
 }
 
-func (s *bidangService) FindById(ctx context.Context, bidangId primitive.ObjectID) (models.Bidang, error){
+func (s *bidangService) FindById(ctx context.Context, bidangId primitive.ObjectID) (formatters.DetailBidangResponse, error){
+	var detailBidang formatters.DetailBidangResponse
 	bidang, err := s.bidangRepository.GetById(ctx, bidangId)
 
 	if err != nil{
-		return bidang, err
+		return detailBidang, err
 	}
 
-	return bidang, nil
+	kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
+
+	if err != nil{
+		return detailBidang, err
+	}
+
+	layananInBidang, err := s.layananRepository.FindAllByBidangId(ctx, bidang.ID)
+
+	if err != nil{
+		return detailBidang, err
+	}
+
+	var allLayanan []formatters.LayananResponse
+
+	for _, layananItem := range layananInBidang{
+		var layanan formatters.LayananResponse
+
+		layanan.ID = layananItem.ID
+		layanan.NamaLayanan = layananItem.NamaLayanan
+
+		allLayanan = append(allLayanan, layanan)
+	}
+
+	detailBidang.ID = bidang.ID
+	detailBidang.NamaBidang = bidang.NamaBidang
+	detailBidang.Kategori = kategori.NamaKategori
+	detailBidang.Layanan = allLayanan
+
+	return detailBidang, nil
 }
 
 
