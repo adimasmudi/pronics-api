@@ -29,3 +29,5 @@ func (r *galeriRepository) Save(ctx context.Context, galeri models.GaleriMitra) 
 
 	return result, nil
 }
+
+// get all image

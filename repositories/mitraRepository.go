@@ -69,3 +69,14 @@ func (r *mitraRepository) UpdateProfil(ctx context.Context, ID primitive.ObjectI
 
 	return result, nil
 }
+
+// get all active mitra
+
+// activate mitra
+
+// get all mitra with search
+
+// get all mitra with filter
+
+// display detail
+
