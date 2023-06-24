@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"pronics-api/constants"
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -14,6 +15,7 @@ type MitraRepository interface {
 	GetMitraById(ctx context.Context, ID primitive.ObjectID) (models.Mitra,  error)
 	GetMitraByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Mitra,  error)
 	UpdateProfil(ctx context.Context, ID primitive.ObjectID, newMitra primitive.M)(*mongo.UpdateResult, error)
+	FindAllActiveMitra(ctx context.Context) ([]models.Mitra, error)
 }
 
 type mitraRepository struct{
@@ -71,8 +73,34 @@ func (r *mitraRepository) UpdateProfil(ctx context.Context, ID primitive.ObjectI
 }
 
 // get all active mitra
+func (r *mitraRepository) FindAllActiveMitra(ctx context.Context) ([]models.Mitra, error){
+	var katalogMitras []models.Mitra
+	
+	currentRes, err := r.DB.Find(ctx, bson.D{{"status", constants.MitraActive}})
 
-// activate mitra
+	if err != nil{
+		return nil, err
+	}
+
+	for currentRes.Next(ctx) {
+        // looping to get each data and append to array
+        var Mitra models.Mitra
+        err := currentRes.Decode(&Mitra)
+        if err != nil {
+            return katalogMitras, err
+        }
+
+        katalogMitras =append(katalogMitras, Mitra)
+    }
+
+	if err := currentRes.Err(); err != nil {
+        return katalogMitras, err
+    }
+
+	currentRes.Close(ctx)
+
+	return katalogMitras, nil
+}
 
 // get all mitra with search
 

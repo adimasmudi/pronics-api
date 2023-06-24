@@ -218,3 +218,39 @@ func (h *mitraHandler) DetailBidangMitra(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *mitraHandler) ShowKatalogMitra(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	katalogMitra, err := h.mitraService.ShowKatalogMitra(ctx)
+
+	if err != nil {
+		response := helper.APIResponse("Get katalog mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get katalog mitra success", http.StatusOK, "success", katalogMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+func (h *mitraHandler) ActivateMitra(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mitraId, _ := primitive.ObjectIDFromHex(c.Params("mitraId"))
+
+	activatedMitra, err := h.mitraService.ActivateMitra(ctx, mitraId)
+
+	if err != nil {
+		response := helper.APIResponse("Activate mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Activate mitra success", http.StatusOK, "success", activatedMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

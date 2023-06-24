@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"pronics-api/constants"
 	"pronics-api/formatters"
 	"pronics-api/helper"
 	"pronics-api/inputs"
@@ -25,6 +26,8 @@ type MitraService interface {
 	GetAllBidangMitra(ctx context.Context, userId primitive.ObjectID) ([]formatters.BidangResponse, error)
 	UpdateBidang(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateBidangMitraInput) (*mongo.UpdateResult, error)
 	DetailBidang(ctx context.Context,userId primitive.ObjectID, bidangId primitive.ObjectID) (formatters.DetailBidangResponse, error)
+	ShowKatalogMitra(ctx context.Context) ([]formatters.KatalogResponse, error)
+	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
 }
 
 type mitraService struct {
@@ -307,4 +310,123 @@ func (s *mitraService) DetailBidang(ctx context.Context,userId primitive.ObjectI
 	detailBidang.Layanan = allLayanan
 
 	return detailBidang, nil
+}
+
+func (s *mitraService) ShowKatalogMitra(ctx context.Context) ([]formatters.KatalogResponse, error){
+	var katalogMitraResponses []formatters.KatalogResponse
+
+	allMitra, err := s.mitraRepository.FindAllActiveMitra(ctx)
+
+	if err != nil{
+		return nil, err
+	}
+
+	for _, mitra := range allMitra{
+		var katalogMitra formatters.KatalogResponse
+
+		if(mitra.NamaToko != ""){
+			katalogMitra.Name = mitra.NamaToko
+		}else{
+			user, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+			if err != nil{
+				return nil, err
+			}
+
+			katalogMitra.Name = user.NamaLengkap
+		}
+		katalogMitra.ID = mitra.ID
+		katalogMitra.Gambar = mitra.GambarMitra
+		katalogMitra.Rating = 5 // sementara
+
+		min := 0.0
+		max := 0.0
+
+		for _, bidangId := range mitra.Bidang{
+			var bidang formatters.BidangResponse
+			bidangMitra, err := s.bidangRepository.GetById(ctx, bidangId)
+
+			if err != nil{
+				return nil, err
+			}
+
+			bidang.ID = bidangMitra.ID
+
+			kategori, err := s.kategoriRepository.GetById(ctx, bidangMitra.KategoriId)
+
+			if err != nil{
+				return nil, err
+			}
+			bidang.Kategori = kategori.NamaKategori
+			bidang.NamaBidang = bidangMitra.NamaBidang
+
+			katalogMitra.Bidang = append(katalogMitra.Bidang, bidang)
+
+			layanan, err := s.layananRepository.FindAllByBidangId(ctx, bidangMitra.ID)
+
+			if err != nil{
+				return nil, err
+			}
+
+			layananMitra, err := s.layananMitraRepository.FindAllByBidangAndMitra(ctx, bidangMitra.ID, mitra.ID)
+
+			if err != nil{
+				return nil, err
+			}
+
+			for _, item := range layanan{
+				if min == 0{
+					min = item.Harga
+				}else if min > item.Harga{
+					min = item.Harga
+				}
+
+				if max == 0{
+					max = item.Harga
+				}else if max < item.Harga{
+					max = item.Harga
+				}
+			}
+
+			for _, item := range layananMitra{
+				if min == 0{
+					min = item.Harga
+				}else if min > item.Harga{
+					min = item.Harga
+				}
+
+				if max == 0{
+					max = item.Harga
+				}else if max < item.Harga{
+					max = item.Harga
+				}
+			}
+
+		}
+
+		priceRange := fmt.Sprintf("Rp. %f - Rp. %f", min, max)
+
+		katalogMitra.RangePrice = priceRange
+
+		katalogMitraResponses = append(katalogMitraResponses, katalogMitra)
+	}
+
+	return katalogMitraResponses, nil
+}
+
+func (s *mitraService) ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error){
+
+	
+	newMitra := bson.M{
+		"status" : constants.MitraActive,
+		"updatedat" : time.Now(),
+	}
+
+	updatedResult, err := s.mitraRepository.UpdateProfil(ctx, mitraId, newMitra)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return updatedResult, nil
 }

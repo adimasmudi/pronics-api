@@ -16,3 +16,12 @@ type MitraResponse struct {
 	Wilayah models.WilayahCakupan `json:"wilayah"`
 	Bidang []models.Bidang `json:"bidang"`
 }
+
+type KatalogResponse struct{
+	ID primitive.ObjectID `json:"id"`
+	Gambar string `json:"gambar"`
+	Name string `json:"name"`
+	RangePrice string `json:"range_price"`
+	Bidang []BidangResponse `json:"bidang"`
+	Rating int `json:"rating"`
+}
