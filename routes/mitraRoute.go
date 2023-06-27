@@ -35,6 +35,7 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute.Put("/updateBidang", middlewares.Auth, mitraHandler.UpdateBidang)
 	mitraRoute.Get("/getBidangs",middlewares.Auth, mitraHandler.GetBidangMitra)
 	mitraRoute.Get("/getBidang/detail/:bidangId", middlewares.Auth, mitraHandler.DetailBidangMitra)
-	mitraRoute.Get("/showKatalog", middlewares.Auth, mitraHandler.ShowKatalogMitra)
+	mitraRoute.Get("/showKatalog", mitraHandler.ShowKatalogMitra)
 	mitraRoute.Put("/activate/:mitraId", middlewares.Auth, mitraHandler.ActivateMitra)
+	mitraRoute.Get("/detail/:mitraId", mitraHandler.DetailMitra)
 }

@@ -28,6 +28,7 @@ type MitraService interface {
 	DetailBidang(ctx context.Context,userId primitive.ObjectID, bidangId primitive.ObjectID) (formatters.DetailBidangResponse, error)
 	ShowKatalogMitra(ctx context.Context) ([]formatters.KatalogResponse, error)
 	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
+	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
 }
 
 type mitraService struct {
@@ -335,6 +336,8 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context) ([]formatters.Katal
 
 			katalogMitra.Name = user.NamaLengkap
 		}
+
+		
 		katalogMitra.ID = mitra.ID
 		katalogMitra.Gambar = mitra.GambarMitra
 		katalogMitra.Rating = 5 // sementara
@@ -429,4 +432,90 @@ func (s *mitraService) ActivateMitra(ctx context.Context, mitraId primitive.Obje
 	}
 
 	return updatedResult, nil
+}
+
+func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error){
+
+	var detailMitra formatters.DetailMitraResponse
+
+	mitra, err := s.mitraRepository.GetMitraById(ctx, mitraId)
+
+	if err != nil{
+		return detailMitra, err
+	}
+
+	user, err := s.userRepository.GetUserById(ctx,mitra.UserId)
+
+	if err != nil{
+		return detailMitra, err
+	}
+
+	galeriImage, err := s.galeriMitraRepository.GetAllByIdMitra(ctx, mitra.ID)
+
+	if err != nil{
+		return detailMitra, err
+	}
+
+	var galeriMitra []string
+
+	for _, galeri := range galeriImage{
+		galeriMitra = append(galeriMitra, galeri.Gambar)
+	}
+
+	var bidangArr []string
+	var layananArr []formatters.LayananDetailMitraResponse
+
+	for _, bidangId := range mitra.Bidang{
+		bidangMitra, err := s.bidangRepository.GetById(ctx, bidangId)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		bidangArr = append(bidangArr, bidangMitra.NamaBidang)
+
+		layanan, err := s.layananRepository.FindAllByBidangId(ctx, bidangMitra.ID)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		layananMitra, err := s.layananMitraRepository.FindAllByBidangAndMitra(ctx, bidangMitra.ID, mitra.ID)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		for _, item := range layanan{
+			var layananForResponse formatters.LayananDetailMitraResponse
+
+			layananForResponse.ID = item.ID
+			layananForResponse.NamaLayanan = item.NamaLayanan
+			layananForResponse.Harga = item.Harga
+
+			layananArr = append(layananArr, layananForResponse)
+		}
+
+		for _, item := range layananMitra{
+			var layananForResponse formatters.LayananDetailMitraResponse
+
+			layananForResponse.ID = item.ID
+			layananForResponse.NamaLayanan = item.NamaLayanan
+			layananForResponse.Harga = item.Harga
+
+			layananArr = append(layananArr, layananForResponse)
+		}
+	}
+
+	detailMitra.ID = mitra.ID
+	detailMitra.NamaPemilik = user.NamaLengkap
+	detailMitra.NamaToko = mitra.NamaToko
+	detailMitra.GaleriImage = galeriMitra
+	detailMitra.FotoProfil = mitra.GambarMitra
+	detailMitra.Deskripsi = user.Deskripsi
+	detailMitra.Bidang = bidangArr
+	detailMitra.Layanan = layananArr
+
+	return detailMitra, nil
+
 }

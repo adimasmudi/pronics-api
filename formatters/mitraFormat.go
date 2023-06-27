@@ -25,3 +25,15 @@ type KatalogResponse struct{
 	Bidang []BidangResponse `json:"bidang"`
 	Rating int `json:"rating"`
 }
+
+type DetailMitraResponse struct{
+	ID primitive.ObjectID `json:"id"`
+	GaleriImage []string `json:"galeri_image"`
+	FotoProfil string `json:"foto_profil"`
+	NamaToko string `json:"nama_toko"`
+	NamaPemilik string `json:"nama_pemilik"`
+	Deskripsi string `json:"deskripsi"`
+	Bidang []string `json:"bidang"`
+	Layanan []LayananDetailMitraResponse `json:"layanan"`
+	Ulasan interface{} `json:"ulasan"`
+}

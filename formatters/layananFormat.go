@@ -6,3 +6,9 @@ type LayananResponse struct {
 	ID         primitive.ObjectID
 	NamaLayanan string `json:"nama_layanan"`
 }
+
+type LayananDetailMitraResponse struct{
+	ID primitive.ObjectID
+	NamaLayanan string `json:"nama_layanan"`
+	Harga float64 `json:"harga"`
+}
