@@ -26,7 +26,7 @@ type MitraService interface {
 	GetAllBidangMitra(ctx context.Context, userId primitive.ObjectID) ([]formatters.BidangResponse, error)
 	UpdateBidang(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateBidangMitraInput) (*mongo.UpdateResult, error)
 	DetailBidang(ctx context.Context,userId primitive.ObjectID, bidangId primitive.ObjectID) (formatters.DetailBidangResponse, error)
-	ShowKatalogMitra(ctx context.Context) ([]formatters.KatalogResponse, error)
+	ShowKatalogMitra(ctx context.Context, searchFilter map[string] string) ([]formatters.KatalogResponse, error)
 	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
 	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
 }
@@ -313,7 +313,7 @@ func (s *mitraService) DetailBidang(ctx context.Context,userId primitive.ObjectI
 	return detailBidang, nil
 }
 
-func (s *mitraService) ShowKatalogMitra(ctx context.Context) ([]formatters.KatalogResponse, error){
+func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[string] string) ([]formatters.KatalogResponse, error){
 	var katalogMitraResponses []formatters.KatalogResponse
 
 	allMitra, err := s.mitraRepository.FindAllActiveMitra(ctx)
@@ -322,22 +322,44 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context) ([]formatters.Katal
 		return nil, err
 	}
 
+	textToSearch := strings.ToLower(searchFilter["search"])
+	wilayahToSearch := strings.ToLower(searchFilter["daerah"])
+	bidangToSearch := strings.ToLower(searchFilter["bidang"])
+
 	for _, mitra := range allMitra{
 		var katalogMitra formatters.KatalogResponse
+
+		user, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+		if err != nil{
+			return nil, err
+		}
 
 		if(mitra.NamaToko != ""){
 			katalogMitra.Name = mitra.NamaToko
 		}else{
-			user, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+			katalogMitra.Name = user.NamaLengkap
+		}
+
+		if(textToSearch != ""){
+			if(!(strings.Contains(strings.ToLower(katalogMitra.Name), textToSearch) || strings.Contains(strings.ToLower(user.Deskripsi), textToSearch))){
+				continue
+			}
+		}
+
+		if(wilayahToSearch != ""){
+			wilayah, err := s.wilayahRepository.FindById(ctx, mitra.Wilayah)
 
 			if err != nil{
 				return nil, err
 			}
 
-			katalogMitra.Name = user.NamaLengkap
+			if(wilayahToSearch != strings.ToLower(wilayah.NamaWilayah)){
+				continue
+			}
 		}
 
-		
+
 		katalogMitra.ID = mitra.ID
 		katalogMitra.Gambar = mitra.GambarMitra
 		katalogMitra.Rating = 5 // sementara
@@ -405,6 +427,19 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context) ([]formatters.Katal
 				}
 			}
 
+		}
+
+		bidangContains := false
+		if(bidangToSearch != ""){
+			for _, bidang := range katalogMitra.Bidang{
+				if strings.ToLower(bidang.NamaBidang) == bidangToSearch{
+					bidangContains = true
+				}
+			}
+
+			if !bidangContains{
+				continue
+			}
 		}
 
 		priceRange := fmt.Sprintf("Rp. %f - Rp. %f", min, max)

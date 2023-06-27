@@ -223,7 +223,21 @@ func (h *mitraHandler) ShowKatalogMitra(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
-	katalogMitra, err := h.mitraService.ShowKatalogMitra(ctx)
+	search := c.Query("search")
+	daerah := c.Query("daerah")
+	bidang := c.Query("bidang")
+	urut := c.Query("urut")
+
+	var searchFilter map[string] string
+	searchFilter = make(map[string] string)
+
+	searchFilter["search"] = search
+	searchFilter["daerah"] = daerah
+	searchFilter["bidang"] = bidang
+	searchFilter["urut"] = urut
+
+	katalogMitra, err := h.mitraService.ShowKatalogMitra(ctx, searchFilter)
+
 
 	if err != nil {
 		response := helper.APIResponse("Get katalog mitra failed", http.StatusBadRequest, "error", err.Error())
