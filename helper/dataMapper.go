@@ -3,6 +3,8 @@ package helper
 import (
 	"pronics-api/formatters"
 	"pronics-api/models"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 func MapperCustomer(user models.User, customer models.Customer, alamat []formatters.AlamatResponse) (formatters.CustomerResponse){
@@ -48,4 +50,17 @@ func MapperMitra(user models.User, mitra models.Mitra, wilayah models.WilayahCak
 	data.Bidang = bidang
 
 	return data
+}
+
+func MapperOrder(customerId primitive.ObjectID, mitraId primitive.ObjectID, order models.Order, orderDetail formatters.OrderDetailResponse)(formatters.OrderResponse){
+	var orderData formatters.OrderResponse
+	orderData.ID = order.ID
+	orderData.CustomerId = customerId
+	orderData.MitraId = mitraId
+	orderData.Status = order.Status
+	orderData.OrderDetail = orderDetail
+	orderData.TanggalOrder = order.TanggalOrderSelesai
+	orderData.TerakhirDiUpdate = order.UpdatedAt
+
+	return orderData
 }

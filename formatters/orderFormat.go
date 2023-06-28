@@ -8,7 +8,7 @@ import (
 
 type OrderResponse struct {
 	ID primitive.ObjectID `json:"id"`
-	UserId primitive.ObjectID `json:"user_id"`
+	CustomerId primitive.ObjectID `json:"customer_id"`
 	MitraId primitive.ObjectID `json:"mitra_id"`
 	TanggalOrder time.Time `json:"tanggal_order"`
 	Status string `json:"status"`

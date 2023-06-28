@@ -11,3 +11,6 @@ const OrderCanceled = "dibatalkan"
 // jenis order
 const OrderHomeCalling = "home calling"
 const OrderTakeDelivery = "take & delivery"
+
+// temporary order exist
+const TemporaryOrderExistMessage = "temporary order exist"

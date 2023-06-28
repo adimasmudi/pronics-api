@@ -2,6 +2,7 @@ package repositories
 
 import (
 	"context"
+	"pronics-api/constants"
 	"pronics-api/models"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -12,8 +13,8 @@ import (
 type OrderRepository interface {
 	Create(ctx context.Context, newOrder models.Order) (*mongo.InsertOneResult, error)
 	GetById(ctx context.Context, ID primitive.ObjectID) (models.Order, error)
-	GetOrderByCustomerIdNMitraId(ctx context.Context, customerId primitive.ObjectID, mitraId primitive.ObjectID) (models.Order, error)
-	GetAllOrder(ctx context.Context, customerId primitive.ObjectID)([]models.Order, error)
+	GetOrderTemporaryByCustomerIdNMitraId(ctx context.Context, customerId primitive.ObjectID, mitraId primitive.ObjectID) (models.Order, error)
+	GetAllOrder(ctx context.Context)([]models.Order, error)
 	GetAllOrderCustomer(ctx context.Context, customerId primitive.ObjectID) ([]models.Order, error)
 	GetAllOrderMitra(ctx context.Context, mitraId primitive.ObjectID) ([]models.Order, error)
 	UpdateOrder(ctx context.Context, ID primitive.ObjectID, newOrder primitive.M)(*mongo.UpdateResult, error)
@@ -51,10 +52,10 @@ func (r *orderRepository) GetById(ctx context.Context, ID primitive.ObjectID) (m
 }
 
 // get order based on id customer and id mitra
-func (r *orderRepository) GetOrderByCustomerIdNMitraId(ctx context.Context, customerId primitive.ObjectID, mitraId primitive.ObjectID) (models.Order, error){
+func (r *orderRepository) GetOrderTemporaryByCustomerIdNMitraId(ctx context.Context, customerId primitive.ObjectID, mitraId primitive.ObjectID) (models.Order, error){
 	var order models.Order
 
-	err := r.DB.FindOne(ctx, bson.M{"customer_id": customerId,"mitra_id":mitraId}).Decode(&order)
+	err := r.DB.FindOne(ctx, bson.M{"customer_id": customerId,"mitra_id":mitraId, "status":constants.OrderTemporary}).Decode(&order)
 
 	if err != nil{
 		return order, err
