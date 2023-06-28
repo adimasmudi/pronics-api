@@ -442,9 +442,9 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 			}
 		}
 
-		priceRange := fmt.Sprintf("Rp. %f - Rp. %f", min, max)
 
-		katalogMitra.RangePrice = priceRange
+		katalogMitra.MinPrice = min
+		katalogMitra.MaxPrice = max
 
 		katalogMitraResponses = append(katalogMitraResponses, katalogMitra)
 	}

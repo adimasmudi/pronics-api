@@ -21,11 +21,12 @@ type KatalogResponse struct{
 	ID primitive.ObjectID `json:"id"`
 	Gambar string `json:"gambar"`
 	Name string `json:"name"`
-	RangePrice string `json:"range_price"`
+	MinPrice float64 `json:"minimal_price"`
+	MaxPrice float64 `json:"maximal_price"`
+	Distance float64 `json:"jarak"`
 	Bidang []BidangResponse `json:"bidang"`
 	Rating int `json:"rating"`
 }
-
 type DetailMitraResponse struct{
 	ID primitive.ObjectID `json:"id"`
 	GaleriImage []string `json:"galeri_image"`
