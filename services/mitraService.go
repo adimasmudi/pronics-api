@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"pronics-api/constants"
@@ -265,6 +265,10 @@ func (s *mitraService) DetailBidang(ctx context.Context,userId primitive.ObjectI
 
 	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
 
+	if err != nil{
+		return detailBidang, err
+	}
+
 	bidang, err := s.bidangRepository.GetById(ctx, bidangId)
 
 	if err != nil{
@@ -476,7 +480,7 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 		
 		defer res.Body.Close()
 	
-		body, err := ioutil.ReadAll(res.Body)
+		body, err := io.ReadAll(res.Body)
 
 		if err != nil {
 			return nil, err

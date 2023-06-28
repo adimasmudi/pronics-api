@@ -203,9 +203,7 @@ func (s *bidangService) UpdateBidang(ctx context.Context, editor_id primitive.Ob
 
 		// update dengan masukkan id bidang yang sekarang ke kategori lama
 
-		var newKategoriUpdate primitive.M
-
-		newKategoriUpdate = bson.M{
+		newKategoriUpdate := bson.M{
 			"bidang_id" : newKategoriBidangArr,
 			"updatedat" : time.Now(),
 		}
@@ -250,9 +248,7 @@ func (s *bidangService) DeleteBidang(ctx context.Context, bidangId primitive.Obj
 		}
 	}
 
-	var oldKategoriUpdate primitive.M
-
-	oldKategoriUpdate = bson.M{
+	oldKategoriUpdate := bson.M{
 		"bidang_id" : oldBidangInKategoriArr,
 		"updatedat" : time.Now(),
 	}

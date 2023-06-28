@@ -128,9 +128,7 @@ func (s *layananService) DeleteLayanan(ctx context.Context, layananId primitive.
 		}
 	}
 
-	var oldBidangUpdate primitive.M
-
-	oldBidangUpdate = bson.M{
+	oldBidangUpdate := bson.M{
 		"layanan_id" : oldLayananInBidangArr,
 		"updatedat" : time.Now(),
 	}
