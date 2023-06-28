@@ -2,11 +2,12 @@ package services
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
-	"math"
+	"io/ioutil"
+	"net/http"
 	"os"
-	"pronics-api/configs"
 	"pronics-api/constants"
 	"pronics-api/formatters"
 	"pronics-api/helper"
@@ -14,14 +15,12 @@ import (
 	"pronics-api/models"
 	"pronics-api/repositories"
 	"sort"
-	"strconv"
 	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"googlemaps.github.io/maps"
 )
 
 type MitraService interface {
@@ -332,22 +331,12 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 	bidangToSearch := strings.ToLower(searchFilter["bidang"])
 	sortBasedOn := strings.ToLower(searchFilter["urut"])
 
-	var lat, lng float64
+	var alamatCustomer string
 
 	if(sortBasedOn != "" && strings.Contains(sortBasedOn, constants.Terdekat)){
-		terdekatArr := strings.Split(sortBasedOn, "[")
+		terdekatArr := strings.Split(sortBasedOn, "-")
 		sortBasedOn = terdekatArr[0]
-		latlng:= strings.Split(terdekatArr[1], ",")
-
-		if lat, err = strconv.ParseFloat(strings.TrimSpace(latlng[0]), 64); err != nil {
-			return nil, err 
-		}
-
-		if lng, err = strconv.ParseFloat(strings.TrimSpace(strings.Trim(latlng[1], "]")), 64); err != nil {
-			return nil, err 
-		}
-
-		fmt.Println(lat, lng)
+		alamatCustomer = strings.TrimSpace(terdekatArr[1])
 	}
 
 	for _, mitra := range allMitra{
@@ -469,18 +458,39 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 		katalogMitra.MinPrice = min
 		katalogMitra.MaxPrice = max
 
-		mapClient := configs.InitMap()
+		url := fmt.Sprintf("https://maps.googleapis.com/maps/api/distancematrix/json?origins=%s&destinations=%s&units=imperial&key=%s",alamatCustomer,mitra.Alamat,os.Getenv("MAPS_API_KEY"))
+		url = strings.Replace(url, " ", "%20", -1)
+		method := "GET"
 
-		// get geocode
-		g := &maps.GeocodingRequest{
-			Address: mitra.Alamat,
+
+		client := &http.Client {}
+		req, err := http.NewRequest(method, url, nil)
+
+		if err != nil {
+			return nil, err
+		}
+		res, err := client.Do(req)
+		if err != nil {
+			return nil, err
+		}
+		
+		defer res.Body.Close()
+	
+		body, err := ioutil.ReadAll(res.Body)
+
+		if err != nil {
+			return nil, err
 		}
 
-		geo, _ := mapClient.Geocode(context.Background(),g)
+		var distanceMatrix helper.DistanceMatrixResult
 
-		distance := (3959 * math.Acos(math.Cos(lat)* math.Cos(geo[0].Geometry.Location.Lat) * math.Cos(geo[0].Geometry.Location.Lng - lng) + math.Sin(lat) * math.Sin(geo[0].Geometry.Location.Lat)))
+		
+		err = json.Unmarshal(body, &distanceMatrix)
+		if err != nil {
+			return nil, err
+		}
 
-		katalogMitra.Distance = distance
+		katalogMitra.Distance = distanceMatrix.Rows[0].Elements[0].Distance.Value
 
 		katalogMitraResponses = append(katalogMitraResponses, katalogMitra)
 	}
