@@ -102,9 +102,3 @@ func (r *mitraRepository) FindAllActiveMitra(ctx context.Context) ([]models.Mitr
 	return katalogMitras, nil
 }
 
-// get all mitra with search
-
-// get all mitra with filter
-
-// display detail
-
