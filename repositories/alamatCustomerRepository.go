@@ -61,7 +61,7 @@ func (r *alamatCustomerRepository) FindAll(ctx context.Context) ([]models.Alamat
 func (r *alamatCustomerRepository) FindAllByCustomerId(ctx context.Context, customerId primitive.ObjectID) ([]models.AlamatCustomer, error){
 	var alamats []models.AlamatCustomer
 
-	currentRes, err := r.DB.Find(ctx, bson.D{{"customer_id", customerId}})
+	currentRes, err := r.DB.Find(ctx, bson.M{"customer_id": customerId})
 
 	if err != nil{
 		return alamats, err

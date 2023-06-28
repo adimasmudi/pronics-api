@@ -82,7 +82,7 @@ func (r *layananRepository) GetById(ctx context.Context, ID primitive.ObjectID) 
 func (r *layananRepository) FindAllByBidangId(ctx context.Context, bidangId primitive.ObjectID) ([]models.Layanan, error){
 	var layanans []models.Layanan
 
-	currentRes, err := r.DB.Find(ctx, bson.D{{"bidang_id",bidangId}})
+	currentRes, err := r.DB.Find(ctx, bson.M{"bidang_id":bidangId})
 
 	if err != nil{
 		return layanans, err

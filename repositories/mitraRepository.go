@@ -76,7 +76,7 @@ func (r *mitraRepository) UpdateProfil(ctx context.Context, ID primitive.ObjectI
 func (r *mitraRepository) FindAllActiveMitra(ctx context.Context) ([]models.Mitra, error){
 	var katalogMitras []models.Mitra
 	
-	currentRes, err := r.DB.Find(ctx, bson.D{{"status", constants.MitraActive}})
+	currentRes, err := r.DB.Find(ctx, bson.M{"status": constants.MitraActive})
 
 	if err != nil{
 		return nil, err

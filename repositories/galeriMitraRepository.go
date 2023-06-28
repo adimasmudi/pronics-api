@@ -36,7 +36,7 @@ func (r *galeriRepository) Save(ctx context.Context, galeri models.GaleriMitra) 
 func (r *galeriRepository) GetAllByIdMitra(ctx context.Context, mitraId primitive.ObjectID) ([]models.GaleriMitra, error){
 	var galeriImages []models.GaleriMitra
 
-	currentRes, err := r.DB.Find(ctx, bson.D{{"mitra_id", mitraId}})
+	currentRes, err := r.DB.Find(ctx, bson.M{"mitra_id": mitraId})
 
 	if err != nil{
 		return galeriImages, err

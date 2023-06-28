@@ -39,7 +39,7 @@ func (r *layananMitraRepository) Save(ctx context.Context, layananMitra models.L
 func (r *layananMitraRepository) FindAllByBidangAndMitra(ctx context.Context, bidangId primitive.ObjectID, mitraId primitive.ObjectID) ([]models.LayananMitra, error){
 	var layananMitras []models.LayananMitra
 
-	currentRes, err := r.DB.Find(ctx, bson.D{{"bidang_id", bidangId},{"mitra_id", mitraId}})
+	currentRes, err := r.DB.Find(ctx, bson.M{"bidang_id": bidangId,"mitra_id": mitraId})
 
 	if err != nil{
 		return layananMitras, err
