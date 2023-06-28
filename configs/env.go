@@ -11,7 +11,7 @@ func EnvMONGOURI() string {
 	err := godotenv.Load()
 
 	if err != nil {
-		log.Fatal("Error loading .env file", err.Error())
+		log.Fatal("Error when loading .env file", err.Error())
 	}
 
 	return os.Getenv("MONGO_URI")
