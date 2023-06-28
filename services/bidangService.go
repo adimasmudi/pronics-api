@@ -177,9 +177,7 @@ func (s *bidangService) UpdateBidang(ctx context.Context, editor_id primitive.Ob
 			}
 		}
 
-		var oldKategoriUpdate primitive.M
-
-		oldKategoriUpdate = bson.M{
+		oldKategoriUpdate := bson.M{
 			"bidang_id" : oldBidangInKategoriArr,
 			"updatedat" : time.Now(),
 		}
