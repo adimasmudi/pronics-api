@@ -8,9 +8,11 @@ require (
 	github.com/gofiber/fiber/v2 v2.46.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/joho/godotenv v1.5.1
+	github.com/kr/pretty v0.2.0
 	go.mongodb.org/mongo-driver v1.11.7
 	golang.org/x/crypto v0.7.0
 	golang.org/x/oauth2 v0.8.0
+	googlemaps.github.io/maps v1.5.0
 )
 
 require (
@@ -30,6 +32,7 @@ require (
 	github.com/googleapis/enterprise-certificate-proxy v0.2.3 // indirect
 	github.com/googleapis/gax-go/v2 v2.7.1 // indirect
 	github.com/klauspost/compress v1.16.3 // indirect
+	github.com/kr/text v0.1.0 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.18 // indirect
@@ -53,6 +56,7 @@ require (
 	golang.org/x/sync v0.1.0 // indirect
 	golang.org/x/sys v0.8.0 // indirect
 	golang.org/x/text v0.9.0 // indirect
+	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/api v0.114.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect

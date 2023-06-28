@@ -4,19 +4,23 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math"
 	"os"
+	"pronics-api/configs"
 	"pronics-api/constants"
 	"pronics-api/formatters"
 	"pronics-api/helper"
 	"pronics-api/inputs"
 	"pronics-api/models"
 	"pronics-api/repositories"
+	"sort"
 	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"googlemaps.github.io/maps"
 )
 
 type MitraService interface {
@@ -442,11 +446,41 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 			}
 		}
 
-
 		katalogMitra.MinPrice = min
 		katalogMitra.MaxPrice = max
 
+		mapClient := configs.InitMap()
+
+		// get geocode
+		g := &maps.GeocodingRequest{
+			Address: mitra.Alamat,
+		}
+
+		geo, _ := mapClient.Geocode(context.Background(),g)
+
+		distance := (3959 * math.Acos(math.Cos(-7.1298428)* math.Cos(geo[0].Geometry.Location.Lat) * math.Cos(geo[0].Geometry.Location.Lng - 112.7430997) + math.Sin(-7.1298428) * math.Sin(geo[0].Geometry.Location.Lat)))
+
+		katalogMitra.Distance = distance
+
 		katalogMitraResponses = append(katalogMitraResponses, katalogMitra)
+	}
+
+	sortBasedOn := strings.ToLower(searchFilter["urut"])
+
+	if(sortBasedOn != ""){
+		if(sortBasedOn == constants.RatingTertinggi){
+			sort.SliceStable(katalogMitraResponses, func(i, j int) bool {
+				return katalogMitraResponses[i].Rating > katalogMitraResponses[j].Rating
+			})
+		}else if (sortBasedOn == constants.Terdeket){
+			sort.SliceStable(katalogMitraResponses, func(i, j int) bool {
+				return katalogMitraResponses[i].Distance < katalogMitraResponses[j].Distance
+			})
+		}else if(sortBasedOn == constants.Termurah){
+			sort.SliceStable(katalogMitraResponses, func(i, j int) bool {
+				return katalogMitraResponses[i].MinPrice < katalogMitraResponses[j].MinPrice
+			})
+		}
 	}
 
 	return katalogMitraResponses, nil
