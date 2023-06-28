@@ -14,6 +14,7 @@ import (
 	"pronics-api/models"
 	"pronics-api/repositories"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -329,6 +330,25 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 	textToSearch := strings.ToLower(searchFilter["search"])
 	wilayahToSearch := strings.ToLower(searchFilter["daerah"])
 	bidangToSearch := strings.ToLower(searchFilter["bidang"])
+	sortBasedOn := strings.ToLower(searchFilter["urut"])
+
+	var lat, lng float64
+
+	if(sortBasedOn != "" && strings.Contains(sortBasedOn, constants.Terdekat)){
+		terdekatArr := strings.Split(sortBasedOn, "[")
+		sortBasedOn = terdekatArr[0]
+		latlng:= strings.Split(terdekatArr[1], ",")
+
+		if lat, err = strconv.ParseFloat(strings.TrimSpace(latlng[0]), 64); err != nil {
+			return nil, err 
+		}
+
+		if lng, err = strconv.ParseFloat(strings.TrimSpace(strings.Trim(latlng[1], "]")), 64); err != nil {
+			return nil, err 
+		}
+
+		fmt.Println(lat, lng)
+	}
 
 	for _, mitra := range allMitra{
 		var katalogMitra formatters.KatalogResponse
@@ -458,21 +478,19 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 
 		geo, _ := mapClient.Geocode(context.Background(),g)
 
-		distance := (3959 * math.Acos(math.Cos(-7.1298428)* math.Cos(geo[0].Geometry.Location.Lat) * math.Cos(geo[0].Geometry.Location.Lng - 112.7430997) + math.Sin(-7.1298428) * math.Sin(geo[0].Geometry.Location.Lat)))
+		distance := (3959 * math.Acos(math.Cos(lat)* math.Cos(geo[0].Geometry.Location.Lat) * math.Cos(geo[0].Geometry.Location.Lng - lng) + math.Sin(lat) * math.Sin(geo[0].Geometry.Location.Lat)))
 
 		katalogMitra.Distance = distance
 
 		katalogMitraResponses = append(katalogMitraResponses, katalogMitra)
 	}
 
-	sortBasedOn := strings.ToLower(searchFilter["urut"])
-
 	if(sortBasedOn != ""){
 		if(sortBasedOn == constants.RatingTertinggi){
 			sort.SliceStable(katalogMitraResponses, func(i, j int) bool {
 				return katalogMitraResponses[i].Rating > katalogMitraResponses[j].Rating
 			})
-		}else if (sortBasedOn == constants.Terdeket){
+		}else if (sortBasedOn == constants.Terdekat){
 			sort.SliceStable(katalogMitraResponses, func(i, j int) bool {
 				return katalogMitraResponses[i].Distance < katalogMitraResponses[j].Distance
 			})
