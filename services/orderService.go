@@ -23,14 +23,15 @@ type orderService struct{
 	customerRepository repositories.CustomerRepository
 	orderRepository repositories.OrderRepository
 	orderDetailRepository repositories.OrderDetailRepository
+	orderPaymentRepository repositories.OrderPaymentRepository
 	bidangRepository repositories.BidangRepository
 	kategoriRepository repositories.KategoriRepository
 	layananRepository repositories.LayananRepository
 	layananMitraRepository repositories.LayananMitraRepository
 }
 
-func NewOrderService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository) *orderService{
-	return &orderService{userRepository, mitraRepository, customerRepository, orderRepository,orderDetailRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository}
+func NewOrderService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository,orderPaymentRepository repositories.OrderPaymentRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository) *orderService{
+	return &orderService{userRepository, mitraRepository, customerRepository, orderRepository,orderDetailRepository,orderPaymentRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository}
 }
 
 func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitive.ObjectID, mitraId primitive.ObjectID) (formatters.OrderResponse, error){
@@ -97,9 +98,15 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 			layananData.Harga = layananToOrder.Harga
 		}
 
-		var orderPayment formatters.OrderPaymentResponse // sementara
+		orderPaymentToDisplay, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailToDisplay.ID)
 
-		orderDetailData = helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPayment)
+		if err != nil{
+			return orderData, err
+		}
+
+		orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
+
+		orderDetailData = helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
 		orderData = helper.MapperOrder(customer.ID, mitra.ID, order, orderDetailData)
 
 		return orderData, errors.New(constants.TemporaryOrderExistMessage)
