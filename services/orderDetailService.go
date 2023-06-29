@@ -38,7 +38,7 @@ func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId
 
 	orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, orderId)
 
-	fmt.Println(orderDetail)
+	fmt.Println("ini",orderDetail, err)
 
 	if err == nil{
 		// update
@@ -59,29 +59,30 @@ func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId
 		}
 
 		fmt.Println(updatedOrderDetail)
+	}else{
+		// add
+		newOrderDetail := models.OrderDetail{
+			ID : primitive.NewObjectID(),
+			OrderId: orderId,
+			BidangId: input.BidangId,
+			JenisOrder: constants.OrderHomeCalling,
+			Merk : input.Merk,
+			LayananId: input.LayananId,
+			DeskripsiKerusakan: input.DeskripsiKerusakan,
+			AlamatPemesanan: input.AlamatPesanan,
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
+		}
+
+		addedOrderDetail, err := s.orderDetailRepository.Save(ctx, newOrderDetail)
+
+		if err != nil{
+			return orderResponse, err
+		}
+
+		fmt.Println(addedOrderDetail)
 	}
-
-	// add
-	newOrderDetail := models.OrderDetail{
-		ID : primitive.NewObjectID(),
-		OrderId: orderId,
-		BidangId: input.BidangId,
-		JenisOrder: constants.OrderHomeCalling,
-		Merk : input.Merk,
-		LayananId: input.LayananId,
-		DeskripsiKerusakan: input.DeskripsiKerusakan,
-		AlamatPemesanan: input.AlamatPesanan,
-		CreatedAt: time.Now(),
-		UpdatedAt: time.Now(),
-	}
-
-	addedOrderDetail, err := s.orderDetailRepository.Save(ctx, newOrderDetail)
-
-	if err != nil{
-		return orderResponse, err
-	}
-
-	fmt.Println(addedOrderDetail)
+	
 
 	// get order to return
 	orderToDisplay, err := s.orderRepository.GetById(ctx, orderId)

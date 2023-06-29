@@ -9,3 +9,7 @@ type AddOrUpdateOrderDetailInput struct {
 	DeskripsiKerusakan string `json:"deskripsi_kerusakan" binding:"required"`
 	AlamatPesanan string `json:"alamat_pemesanan" binding:"required"`
 }
+
+type AddOrUpdateOrderPaymentnput struct {
+	
+}
