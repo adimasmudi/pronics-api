@@ -64,3 +64,20 @@ func MapperOrder(customerId primitive.ObjectID, mitraId primitive.ObjectID, orde
 
 	return orderData
 }
+
+func MapperOrderDetail(orderDetail models.OrderDetail, bidang formatters.BidangResponse, layanan formatters.LayananResponse, orderPayment formatters.OrderPaymentResponse) formatters.OrderDetailResponse{
+	var orderData formatters.OrderDetailResponse
+
+	orderData.ID = orderDetail.ID
+	orderData.Bidang = bidang
+	orderData.JenisOrder = orderDetail.JenisOrder
+	orderData.AlamatPesanan = orderDetail.AlamatPemesanan
+	orderData.DeskripsiKerusakan = orderDetail.DeskripsiKerusakan
+	orderData.JenisOrder = orderDetail.JenisOrder
+	orderData.LastUpdate = orderDetail.UpdatedAt
+	orderData.Layanan = layanan
+	orderData.Merk = orderDetail.Merk
+	orderData.OrderPayment = orderPayment
+
+	return orderData
+}

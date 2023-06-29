@@ -10,7 +10,7 @@ type OrderDetailResponse struct {
 	ID primitive.ObjectID `json:"id"`
 	Bidang BidangResponse `json:"bidang"`
 	JenisOrder string `json:"jenis_order"`
-	JenisLayanan string `json:"jenis_layanan"`
+	Layanan LayananResponse `json:"layanan"`
 	Merk string `json:"merk"`
 	DeskripsiKerusakan string `json:"deskripsi_kerusakan"`
 	AlamatPesanan string `json:"alamat_pesanan"`

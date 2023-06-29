@@ -33,6 +33,7 @@ type MitraService interface {
 	ShowKatalogMitra(ctx context.Context, searchFilter map[string] string) ([]formatters.KatalogResponse, error)
 	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
 	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
+	// get all layanan mitra (layanan and layanan mitra combined )
 }
 
 type mitraService struct {

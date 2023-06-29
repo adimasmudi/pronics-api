@@ -22,14 +22,20 @@ type orderService struct{
 	mitraRepository repositories.MitraRepository
 	customerRepository repositories.CustomerRepository
 	orderRepository repositories.OrderRepository
+	orderDetailRepository repositories.OrderDetailRepository
+	bidangRepository repositories.BidangRepository
+	kategoriRepository repositories.KategoriRepository
+	layananRepository repositories.LayananRepository
+	layananMitraRepository repositories.LayananMitraRepository
 }
 
-func NewOrderService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository) *orderService{
-	return &orderService{userRepository, mitraRepository, customerRepository, orderRepository}
+func NewOrderService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository) *orderService{
+	return &orderService{userRepository, mitraRepository, customerRepository, orderRepository,orderDetailRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository}
 }
 
 func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitive.ObjectID, mitraId primitive.ObjectID) (formatters.OrderResponse, error){
 	var orderData formatters.OrderResponse
+	var orderDetailData formatters.OrderDetailResponse
 
 	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, userId)
 
@@ -45,10 +51,54 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 
 	order, err := s.orderRepository.GetOrderTemporaryByCustomerIdNMitraId(ctx, customer.ID, mitra.ID)
 
-	var orderDetail formatters.OrderDetailResponse // sementara
 
 	if err == nil{
-		orderData = helper.MapperOrder(customer.ID, mitra.ID, order, orderDetail)
+		orderDetailToDisplay, err := s.orderDetailRepository.GetByOrderId(ctx,order.ID)
+
+		if err != nil{
+			return orderData, err
+		}
+
+		var bidangData formatters.BidangResponse
+
+		bidangToOrder, err := s.bidangRepository.GetById(ctx, orderDetailToDisplay.BidangId)
+
+		if err != nil{
+			return orderData, err
+		}
+
+		kategoriToOrder, err := s.kategoriRepository.GetById(ctx, bidangToOrder.KategoriId)
+
+		if err != nil{
+			return orderData, err
+		}
+
+		bidangData.ID = bidangToOrder.ID
+		bidangData.Kategori = kategoriToOrder.NamaKategori
+		bidangData.NamaBidang = bidangToOrder.NamaBidang
+
+		var layananData formatters.LayananResponse
+
+		layananToOrder, err := s.layananRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+
+		if err != nil{
+			layananMitraToOrder, err := s.layananMitraRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+
+			if err != nil{
+				return orderData, err
+			}
+
+			layananData.ID = layananMitraToOrder.ID
+			layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
+		}else{
+			layananData.ID = layananToOrder.ID
+			layananData.NamaLayanan = layananToOrder.NamaLayanan
+		}
+
+		var orderPayment formatters.OrderPaymentResponse // sementara
+
+		orderDetailData = helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPayment)
+		orderData = helper.MapperOrder(customer.ID, mitra.ID, order, orderDetailData)
 
 		return orderData, errors.New(constants.TemporaryOrderExistMessage)
 	}
@@ -74,7 +124,8 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 		return orderData, err
 	}
 
-	orderData = helper.MapperOrder(customer.ID, mitra.ID, orderAdded, orderDetail)
+
+	orderData = helper.MapperOrder(customer.ID, mitra.ID, orderAdded, orderDetailData)
 
 	return orderData, nil
 }
