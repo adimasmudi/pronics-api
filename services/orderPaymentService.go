@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -109,15 +110,40 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 
 	distance := distanceMatrix.Rows[0].Elements[0].Distance.Value / 1000
 
-	var transportFee float64
+	if (input.JenisOrder != constants.OrderTakeDelivery && input.JenisOrder != constants.OrderHomeCalling){
+		return orderResponse, errors.New("jenis order harus antara home calling atau take & delivery")
+	}
+
+	transportFee := 1.0
+
+	if(input.JenisOrder == constants.OrderTakeDelivery){
+		transportFee *= 2
+	}
+
+	if(input.JenisOrder != orderDetail.JenisOrder){
+		newOrderDetail := bson.M{
+			"jenisorder" : input.JenisOrder,
+			"updatedat" : time.Now(),
+		}
+	
+		updatedOrderDetail, err := s.orderDetailRepository.Update(ctx, orderDetailId, newOrderDetail)
+	
+		if err != nil{
+			return orderResponse, err
+		}
+	
+		fmt.Println(updatedOrderDetail)
+	}
 
 	if distance <= 10{
-		transportFee = float64(distance * constants.CostPerKMLessThan10KM)
+		transportFee *= float64(distance * constants.CostPerKMLessThan10KM)
 	}else{
-		transportFee = float64(distance * constants.CostPerKMMoreThan10KM)
+		transportFee *= float64(distance * constants.CostPerKMMoreThan10KM)
 	}
 
 	var percentageAppsCharge int
+
+	fmt.Println("ttl",biayaLayanan+transportFee)
 
 	if (biayaLayanan+transportFee) <= 100000{
 		percentageAppsCharge = constants.AppsChargePercentageLessThan100k
@@ -125,11 +151,9 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		percentageAppsCharge = constants.AppsChargePercentageMoreThan100k
 	}
 
-	biayaAplikasi := (biayaLayanan+transportFee) * float64(percentageAppsCharge) / 100
+	fmt.Println(percentageAppsCharge)
 
-	if(input.JenisOrder == constants.OrderTakeDelivery){
-		transportFee *= 2
-	}
+	biayaAplikasi := (biayaLayanan+transportFee) * float64(percentageAppsCharge) / 100
 
 	orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailId)
 
