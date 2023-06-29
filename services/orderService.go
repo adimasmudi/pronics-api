@@ -77,7 +77,7 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 		bidangData.Kategori = kategoriToOrder.NamaKategori
 		bidangData.NamaBidang = bidangToOrder.NamaBidang
 
-		var layananData formatters.LayananResponse
+		var layananData formatters.LayananDetailMitraResponse
 
 		layananToOrder, err := s.layananRepository.GetById(ctx, orderDetailToDisplay.LayananId)
 
@@ -90,9 +90,11 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 
 			layananData.ID = layananMitraToOrder.ID
 			layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
+			layananData.Harga = layananMitraToOrder.Harga
 		}else{
 			layananData.ID = layananToOrder.ID
 			layananData.NamaLayanan = layananToOrder.NamaLayanan
+			layananData.Harga = layananToOrder.Harga
 		}
 
 		var orderPayment formatters.OrderPaymentResponse // sementara

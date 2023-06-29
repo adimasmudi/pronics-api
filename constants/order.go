@@ -14,3 +14,9 @@ const OrderTakeDelivery = "take & delivery"
 
 // temporary order exist
 const TemporaryOrderExistMessage = "temporary order exist"
+
+// biaya aplikasi
+const AppsChargePercentageLessThan100k = 2
+const AppsChargePercentageMoreThan100k = 5
+const CostPerKMLessThan10KM = 2500
+const CostPerKMMoreThan10KM = 1000

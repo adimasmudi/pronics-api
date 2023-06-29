@@ -10,6 +10,6 @@ type AddOrUpdateOrderDetailInput struct {
 	AlamatPesanan string `json:"alamat_pemesanan" binding:"required"`
 }
 
-type AddOrUpdateOrderPaymentnput struct {
-	
+type AddOrUpdateOrderPaymentInput struct {
+	JenisOrder string `json:"jenis_order" binding:"required"`
 }

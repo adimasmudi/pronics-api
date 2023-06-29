@@ -65,7 +65,7 @@ func MapperOrder(customerId primitive.ObjectID, mitraId primitive.ObjectID, orde
 	return orderData
 }
 
-func MapperOrderDetail(orderDetail models.OrderDetail, bidang formatters.BidangResponse, layanan formatters.LayananResponse, orderPayment formatters.OrderPaymentResponse) formatters.OrderDetailResponse{
+func MapperOrderDetail(orderDetail models.OrderDetail, bidang formatters.BidangResponse, layanan formatters.LayananDetailMitraResponse, orderPayment formatters.OrderPaymentResponse) formatters.OrderDetailResponse{
 	var orderData formatters.OrderDetailResponse
 
 	orderData.ID = orderDetail.ID
@@ -80,4 +80,21 @@ func MapperOrderDetail(orderDetail models.OrderDetail, bidang formatters.BidangR
 	orderData.OrderPayment = orderPayment
 
 	return orderData
+}
+
+func MapperOrderPayment(orderPayment models.OrderPayment) formatters.OrderPaymentResponse{
+	var orderData formatters.OrderPaymentResponse
+
+	orderData.ID = orderPayment.ID
+	orderData.BiayaAplikasi = orderPayment.BiayaAplikasi
+	orderData.BiayaPelayanan = orderPayment.BiayaPelayanan
+	orderData.BiayaPerjalanan = orderPayment.BiayaPerjalanan
+	orderData.BuktiBayar = orderPayment.BuktiBayar
+	orderData.Diskon = orderPayment.Diskon
+	orderData.TotalBiaya = orderPayment.TotalBiaya
+	orderData.MetodePembayaran = orderPayment.MetodePembayaran
+	orderData.LastUpdate = orderPayment.UpdatedAt
+
+	return orderData
+
 }

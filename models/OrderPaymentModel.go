@@ -11,12 +11,12 @@ type OrderPayment struct {
 	OrderDetailId primitive.ObjectID `json:"order_detail_id" bson:"order_detail_id"`
 	BiayaPelayanan float64 `json:"biaya_pelayanan"`
 	BiayaPerjalanan float64 `json:"biaya_perjalanan"`
-	Diskon float64 `json:"diskon"`
+	Diskon float64 `json:"diskon,omitempty"`
 	BiayaAplikasi float64 `json:"biaya_aplikasi"`
 	TotalBiaya float64 `json:"total_biaya"`
-	BiayaAfterDiskon float64 `json:"biaya_after_diskon"`
-	MetodePembayaran string `json:"metode_pembayaran"`
-	BuktiBayar string `json:"bukti_bayar"`
+	BiayaAfterDiskon float64 `json:"biaya_after_diskon,omitempty"`
+	MetodePembayaran string `json:"metode_pembayaran,omitempty"`
+	BuktiBayar string `json:"bukti_bayar,omitempty"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 }

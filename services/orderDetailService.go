@@ -38,8 +38,6 @@ func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId
 
 	orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, orderId)
 
-	fmt.Println("ini",orderDetail, err)
-
 	if err == nil{
 		// update
 		newOrderDetail := bson.M{
@@ -115,7 +113,7 @@ func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId
 	bidangData.Kategori = kategoriToOrder.NamaKategori
 	bidangData.NamaBidang = bidangToOrder.NamaBidang
 
-	var layananData formatters.LayananResponse
+	var layananData formatters.LayananDetailMitraResponse
 
 	layananToOrder, err := s.layananRepository.GetById(ctx, orderDetailToDisplay.LayananId)
 
@@ -128,9 +126,11 @@ func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId
 
 		layananData.ID = layananMitraToOrder.ID
 		layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
+		layananData.Harga = layananMitraToOrder.Harga
 	}else{
 		layananData.ID = layananToOrder.ID
 		layananData.NamaLayanan = layananToOrder.NamaLayanan
+		layananData.Harga = layananToOrder.Harga
 	}
 
 	var orderPayment formatters.OrderPaymentResponse // sementara
