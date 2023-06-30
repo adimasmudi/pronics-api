@@ -23,6 +23,7 @@ import (
 
 type OrderPaymentService interface {
 	AddOrUpdateOrderPayment(ctx context.Context, orderDetailId primitive.ObjectID, input inputs.AddOrUpdateOrderPaymentInput) (formatters.OrderResponse, error)
+	ConfirmPayment(ctx context.Context, orderPaymentId primitive.ObjectID,input inputs.ConfirmPaymentInput, fileName string) (formatters.OrderResponse, error)
 }
 
 type orderPaymentService struct{
@@ -163,7 +164,7 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 			"biayaperjalanan" : transportFee,
 			"biayapelayanan" : biayaLayanan,
 			"biayaaplikasi" : biayaAplikasi,
-			"totalBiaya" : transportFee + biayaLayanan + biayaAplikasi,
+			"totalbiaya" : transportFee + biayaLayanan + biayaAplikasi,
 			"updatedat" : time.Now(),
 		}
 
@@ -258,6 +259,131 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
 	orderDetailData := helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
 	orderData :=helper.MapperOrder(orderToDisplay.CustomerId, orderToDisplay.MitraId, orderToDisplay, orderDetailData)
+
+	return orderData, nil
+}
+
+func (s *orderPaymentService) ConfirmPayment(ctx context.Context, orderPaymentId primitive.ObjectID,input inputs.ConfirmPaymentInput, fileName string) (formatters.OrderResponse, error){
+	var orderData formatters.OrderResponse
+	var buktiBayar string
+
+	orderPayment, err := s.orderPaymentRepository.GetById(ctx, orderPaymentId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	orderDetail, err := s.orderDetailRepository.GetById(ctx, orderPayment.OrderDetailId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	order, err := s.orderRepository.GetById(ctx, orderDetail.OrderId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	if fileName != ""{
+		buktiBayar = os.Getenv("CLOUD_STORAGE_READ_LINK")+"buktiBayar/"+fileName
+	}
+
+	if(input.MetodePembayaran != constants.AutomaticPayment && input.MetodePembayaran != constants.BankTransferPayment && input.MetodePembayaran != constants.CashPayment){
+		return orderData, errors.New("metode pembayaran harus antara 'bayar otomatis','bank transfer','cash' (lowercase)")
+	}
+
+	newOrderPayment := bson.M{
+		"metodepembayaran" : input.MetodePembayaran,
+		"buktibayar" : buktiBayar,
+		"updatedat" : time.Now(),
+	}
+
+	updatedPayment, err := s.orderPaymentRepository.Update(ctx, orderPaymentId, newOrderPayment)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	fmt.Println(updatedPayment)
+
+	transaksiId := fmt.Sprintf("PRN-%s%s",string(order.ID.Hex())[0:len(string(order.ID.Hex()))/2],string(time.Now().UTC().Format("2023-06-30")))
+
+	newOrder := bson.M{
+		"status" : constants.OrderWaiting,
+		"transaksiid" : transaksiId,
+		"tanggalorderselesai" : time.Now(),
+		"updatedat" : time.Now(),
+	}
+
+	updatedOrder, err := s.orderRepository.UpdateOrder(ctx,order.ID, newOrder)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	fmt.Println(updatedOrder)
+
+	// get order to return
+	orderToDisplay, err := s.orderRepository.GetById(ctx, order.ID)
+	
+	if err != nil{
+		return orderData, err
+	}
+
+	orderDetailToDisplay, err := s.orderDetailRepository.GetByOrderId(ctx,order.ID)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	var bidangData formatters.BidangResponse
+
+	bidangToOrder, err := s.bidangRepository.GetById(ctx, orderDetailToDisplay.BidangId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	kategoriToOrder, err := s.kategoriRepository.GetById(ctx, bidangToOrder.KategoriId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	bidangData.ID = bidangToOrder.ID
+	bidangData.Kategori = kategoriToOrder.NamaKategori
+	bidangData.NamaBidang = bidangToOrder.NamaBidang
+
+	var layananData formatters.LayananDetailMitraResponse
+
+	layananToOrder, err := s.layananRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+
+	if err != nil{
+		layananMitraToOrder, err := s.layananMitraRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+
+		if err != nil{
+			return orderData, err
+		}
+
+		layananData.ID = layananMitraToOrder.ID
+		layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
+		layananData.Harga = layananMitraToOrder.Harga
+	}else{
+		layananData.ID = layananToOrder.ID
+		layananData.NamaLayanan = layananToOrder.NamaLayanan
+		layananData.Harga = layananToOrder.Harga
+	}
+
+	orderPaymentToDisplay, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
+	orderDetailData := helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
+	orderData =helper.MapperOrder(orderToDisplay.CustomerId, orderToDisplay.MitraId, orderToDisplay, orderDetailData)
 
 	return orderData, nil
 }

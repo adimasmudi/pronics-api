@@ -20,3 +20,8 @@ const AppsChargePercentageLessThan100k = 2
 const AppsChargePercentageMoreThan100k = 5
 const CostPerKMLessThan10KM = 2500
 const CostPerKMMoreThan10KM = 1000
+
+// metode pembayarn
+const BankTransferPayment = "bank transfer"
+const AutomaticPayment = "bayar otomatis"
+const CashPayment = "cash"

@@ -31,4 +31,5 @@ func OrderPaymentRoute(api fiber.Router, mitraCollection *mongo.Collection, orde
 	orderPayment := api.Group("/orderPayment")
 
 	orderPayment.Post("/createOrUpdate/:orderDetailId", middlewares.Auth, orderPaymentHandler.AddOrUpdateOrderPayment)
+	orderPayment.Post("/confirmPayment/:orderPaymentId", middlewares.Auth, orderPaymentHandler.ConfirmPayment)
 }

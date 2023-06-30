@@ -3,6 +3,7 @@ package controllers
 import (
 	"context"
 	"net/http"
+	"pronics-api/configs"
 	"pronics-api/helper"
 	"pronics-api/inputs"
 	"pronics-api/services"
@@ -42,7 +43,64 @@ func (h *orderPaymentHandler) AddOrUpdateOrderPayment(c *fiber.Ctx) error {
 		return nil
 	}
 
-	response := helper.APIResponse("Add or update Update order payment success", http.StatusOK, "success", AddOrUpdateOrderPayment)
+	response := helper.APIResponse("Add or update order payment success", http.StatusOK, "success", AddOrUpdateOrderPayment)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+func (h *orderPaymentHandler) ConfirmPayment(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	orderPaymentId, _ := primitive.ObjectIDFromHex(c.Params("orderPaymentId"))
+
+	var input inputs.ConfirmPaymentInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Confirm payment failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	fileName := ""
+
+	buktiBayar, err := c.FormFile("bukti_bayar")
+
+	if buktiBayar != nil{
+		if err != nil {
+			response := helper.APIResponse("Confirm payment failed", http.StatusBadRequest, "error", err.Error())
+			c.Status(http.StatusBadRequest).JSON(response)
+			return nil
+		}
+
+		blobFile, err := buktiBayar.Open()
+	
+		if err != nil {
+			response := helper.APIResponse("Confirm payment failed", http.StatusBadRequest, "error", err.Error())
+			c.Status(http.StatusBadRequest).JSON(response)
+			return nil
+		}
+	
+		fileName = helper.GenerateFilename(buktiBayar.Filename)
+
+		err = configs.StorageInit("buktiBayar").UploadFile(blobFile, fileName)
+	
+		if err != nil {
+			response := helper.APIResponse("Confirm payment failed", http.StatusBadRequest, "error", err.Error())
+			c.Status(http.StatusBadRequest).JSON(response)
+			return nil
+		}
+	}
+
+	ConfirmedPayment, err := h.orderPaymentService.ConfirmPayment(ctx, orderPaymentId, input, fileName)
+
+	if err != nil {
+		response := helper.APIResponse("Confirm payment failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Confirm order payment success", http.StatusOK, "success", ConfirmedPayment)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }

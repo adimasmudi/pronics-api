@@ -55,6 +55,7 @@ func MapperMitra(user models.User, mitra models.Mitra, wilayah models.WilayahCak
 func MapperOrder(customerId primitive.ObjectID, mitraId primitive.ObjectID, order models.Order, orderDetail formatters.OrderDetailResponse)(formatters.OrderResponse){
 	var orderData formatters.OrderResponse
 	orderData.ID = order.ID
+	orderData.TransaksiId = order.TransaksiId
 	orderData.CustomerId = customerId
 	orderData.MitraId = mitraId
 	orderData.Status = order.Status

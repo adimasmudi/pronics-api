@@ -38,6 +38,10 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 	var orderData formatters.OrderResponse
 	var orderDetailData formatters.OrderDetailResponse
 
+	var orderPaymentToDisplay models.OrderPayment
+	var layananData formatters.LayananDetailMitraResponse
+	var bidangData formatters.BidangResponse
+
 	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, userId)
 
 	if err != nil{
@@ -56,52 +60,48 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 	if err == nil{
 		orderDetailToDisplay, err := s.orderDetailRepository.GetByOrderId(ctx,order.ID)
 
-		if err != nil{
-			return orderData, err
-		}
+		if err == nil{
 
-		var bidangData formatters.BidangResponse
-
-		bidangToOrder, err := s.bidangRepository.GetById(ctx, orderDetailToDisplay.BidangId)
-
-		if err != nil{
-			return orderData, err
-		}
-
-		kategoriToOrder, err := s.kategoriRepository.GetById(ctx, bidangToOrder.KategoriId)
-
-		if err != nil{
-			return orderData, err
-		}
-
-		bidangData.ID = bidangToOrder.ID
-		bidangData.Kategori = kategoriToOrder.NamaKategori
-		bidangData.NamaBidang = bidangToOrder.NamaBidang
-
-		var layananData formatters.LayananDetailMitraResponse
-
-		layananToOrder, err := s.layananRepository.GetById(ctx, orderDetailToDisplay.LayananId)
-
-		if err != nil{
-			layananMitraToOrder, err := s.layananMitraRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+			bidangToOrder, err := s.bidangRepository.GetById(ctx, orderDetailToDisplay.BidangId)
 
 			if err != nil{
 				return orderData, err
 			}
 
-			layananData.ID = layananMitraToOrder.ID
-			layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
-			layananData.Harga = layananMitraToOrder.Harga
-		}else{
-			layananData.ID = layananToOrder.ID
-			layananData.NamaLayanan = layananToOrder.NamaLayanan
-			layananData.Harga = layananToOrder.Harga
-		}
+			kategoriToOrder, err := s.kategoriRepository.GetById(ctx, bidangToOrder.KategoriId)
 
-		orderPaymentToDisplay, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailToDisplay.ID)
+			if err != nil{
+				return orderData, err
+			}
 
-		if err != nil{
-			return orderData, err
+			bidangData.ID = bidangToOrder.ID
+			bidangData.Kategori = kategoriToOrder.NamaKategori
+			bidangData.NamaBidang = bidangToOrder.NamaBidang
+
+
+			layananToOrder, err := s.layananRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+
+			if err != nil{
+				layananMitraToOrder, err := s.layananMitraRepository.GetById(ctx, orderDetailToDisplay.LayananId)
+
+				if err != nil{
+					return orderData, err
+				}
+
+				layananData.ID = layananMitraToOrder.ID
+				layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
+				layananData.Harga = layananMitraToOrder.Harga
+			}else{
+				layananData.ID = layananToOrder.ID
+				layananData.NamaLayanan = layananToOrder.NamaLayanan
+				layananData.Harga = layananToOrder.Harga
+			}
+
+			orderPaymentToDisplay, err = s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailToDisplay.ID)
+
+			if err != nil{
+				return orderData, err
+			}
 		}
 
 		orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
@@ -132,7 +132,6 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 	if err != nil{
 		return orderData, err
 	}
-
 
 	orderData = helper.MapperOrder(customer.ID, mitra.ID, orderAdded, orderDetailData)
 
