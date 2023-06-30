@@ -45,3 +45,20 @@ func (h *orderHandler) CreateTemporaryOrder(c *fiber.Ctx) error{
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *orderHandler) FindAll(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	orders, err := h.orderService.GetAllOrder(ctx)
+
+	if err != nil{
+		response := helper.APIResponse("Get all order Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get all order success", http.StatusOK, "success", orders)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

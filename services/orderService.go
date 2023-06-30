@@ -15,6 +15,7 @@ import (
 
 type OrderService interface {
 	CreateTemporaryOrder(ctx context.Context, userId primitive.ObjectID, mitraId primitive.ObjectID) (formatters.OrderResponse, error)
+	GetAllOrder(ctx context.Context)([]formatters.OrderResponse, error)
 }
 
 type orderService struct{
@@ -136,4 +137,76 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 	orderData = helper.MapperOrder(customer.ID, mitra.ID, orderAdded, orderDetailData)
 
 	return orderData, nil
+}
+
+func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderResponse, error){
+	var orderResponses []formatters.OrderResponse
+
+	var bidangData formatters.BidangResponse
+	var layananData formatters.LayananDetailMitraResponse
+
+	orders, err := s.orderRepository.GetAllOrder(ctx)
+
+	if err != nil{
+		return orderResponses, err
+	}
+
+	for _, order := range orders{
+		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		bidang, err := s.bidangRepository.GetById(ctx, orderDetail.BidangId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		bidangData.ID = bidang.ID
+		bidangData.Kategori = kategori.NamaKategori
+		bidangData.NamaBidang = bidang.NamaBidang
+
+
+		layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
+
+		if err != nil{
+			layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
+
+			if err != nil{
+				return orderResponses, err
+			}
+
+			layananData.ID = layananMitra.ID
+			layananData.NamaLayanan = layananMitra.NamaLayanan
+			layananData.Harga = layananMitra.Harga
+		}else{
+			layananData.ID = layanan.ID
+			layananData.NamaLayanan = layanan.NamaLayanan
+			layananData.Harga = layanan.Harga
+		}
+
+		orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
+		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
+		orderMapping := helper.MapperOrder(order.CustomerId, order.MitraId,order,orderDetailMapping)
+
+		orderResponses = append(orderResponses, orderMapping)
+	}
+
+	return orderResponses, nil
+
+
 }

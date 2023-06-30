@@ -57,6 +57,10 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		return orderResponse, err
 	}
 
+	if order.Status != constants.OrderTemporary{
+		return orderResponse, errors.New("order sudah diproses, bukan temporary order")
+	}
+
 	mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
 
 	if err != nil{
@@ -73,8 +77,15 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 			return orderResponse, err
 		}
 
+		if(input.JenisOrder == constants.OrderTakeDelivery && layananMitra.AvailableTakeDelivery == false){
+			return orderResponse, errors.New("order ini tidak menerima take & delivery")
+		}
+
 		biayaLayanan = layananMitra.Harga
 	}else{
+		if(input.JenisOrder == constants.OrderTakeDelivery && layanan.AvailableTakeDelivery == false){
+			return orderResponse, errors.New("order ini tidak menerima take & delivery")
+		}
 		biayaLayanan = layanan.Harga
 	}
 
@@ -283,6 +294,10 @@ func (s *orderPaymentService) ConfirmPayment(ctx context.Context, orderPaymentId
 
 	if err != nil{
 		return orderData, err
+	}
+
+	if order.Status != constants.OrderTemporary{
+		return orderData, errors.New("order sudah diproses, bukan temporary order")
 	}
 
 	if fileName != ""{

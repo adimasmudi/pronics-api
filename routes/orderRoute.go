@@ -32,4 +32,5 @@ func OrderRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	order := api.Group("/order")
 
 	order.Post("/createTemporary/:mitraId", middlewares.Auth,orderHandler.CreateTemporaryOrder)
+	order.Get("/all", middlewares.Auth, orderHandler.FindAll)
 }

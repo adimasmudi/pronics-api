@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"pronics-api/constants"
 	"pronics-api/formatters"
@@ -35,6 +36,16 @@ func NewOrderDetailService( orderRepository repositories.OrderRepository, orderD
 func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId primitive.ObjectID, input inputs.AddOrUpdateOrderDetailInput) (formatters.OrderResponse, error){
 
 	var orderResponse formatters.OrderResponse 
+
+	order, err := s.orderRepository.GetById(ctx, orderId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	if order.Status != constants.OrderTemporary{
+		return orderResponse, errors.New("order sudah diproses, bukan temporary order")
+	}
 
 	orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, orderId)
 
