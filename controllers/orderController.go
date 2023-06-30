@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"pronics-api/constants"
 	"pronics-api/helper"
+	"pronics-api/inputs"
 	"pronics-api/services"
 	"time"
 
@@ -78,6 +79,33 @@ func (h *orderHandler) GetOrderDetail(c *fiber.Ctx) error {
 	}
 
 	response := helper.APIResponse("Get order detail success", http.StatusOK, "success", order)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+func (h *orderHandler) UpdateStatus(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	orderId, _:= primitive.ObjectIDFromHex(c.Params("orderId"))
+
+	var input inputs.UpdateStatusOrderInput
+
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Update status order failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	updatedStatusOrder, err := h.orderService.UpdateStatusOrder(ctx, orderId, input)
+
+	if err != nil{
+		response := helper.APIResponse("Update status order Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Update status order success", http.StatusOK, "success", updatedStatusOrder)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }

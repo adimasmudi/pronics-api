@@ -6,17 +6,21 @@ import (
 	"pronics-api/constants"
 	"pronics-api/formatters"
 	"pronics-api/helper"
+	"pronics-api/inputs"
 	"pronics-api/models"
 	"pronics-api/repositories"
 	"time"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
 type OrderService interface {
 	CreateTemporaryOrder(ctx context.Context, userId primitive.ObjectID, mitraId primitive.ObjectID) (formatters.OrderResponse, error)
 	GetAllOrder(ctx context.Context)([]formatters.OrderResponse, error)
 	GetOrderDetail(ctx context.Context, orderId primitive.ObjectID) (formatters.OrderResponse, error)
+	UpdateStatusOrder(ctx context.Context, orderId primitive.ObjectID, input inputs.UpdateStatusOrderInput) (*mongo.UpdateResult, error)
 }
 
 type orderService struct{
@@ -274,4 +278,31 @@ func (s *orderService) GetOrderDetail(ctx context.Context, orderId primitive.Obj
 		orderResponse = helper.MapperOrder(order.CustomerId, order.MitraId,order,orderDetailMapping)
 
 		return orderResponse, nil
+}
+
+func (s *orderService) UpdateStatusOrder(ctx context.Context, orderId primitive.ObjectID, input inputs.UpdateStatusOrderInput) (*mongo.UpdateResult, error){
+	
+	// status input validation
+	if(input.Status != constants.OrderCanceled && input.Status != constants.OrderCompleted && input.Status != constants.OrderProcess && input.Status != constants.OrderRejected){
+		return nil, errors.New("status order hanya boleh di update ke antara 'selesai','proses','ditolak','dibatalkan'")
+	}
+
+	order, err := s.orderRepository.GetById(ctx, orderId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	newOrder := bson.M{
+		"status" : input.Status,
+		"updatedat" : time.Now(),
+	}
+
+	updatedOrder, err := s.orderRepository.UpdateOrder(ctx,order.ID, newOrder)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return updatedOrder, nil
 }

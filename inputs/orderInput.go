@@ -17,3 +17,7 @@ type AddOrUpdateOrderPaymentInput struct {
 type ConfirmPaymentInput struct{
 	MetodePembayaran string `form:"metode_pembayaran" json:"metode_pembayaran" binding:"required"`
 }
+
+type UpdateStatusOrderInput struct{
+	Status string `json:"status"`
+}
