@@ -77,13 +77,13 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 			return orderResponse, err
 		}
 
-		if(input.JenisOrder == constants.OrderTakeDelivery && layananMitra.AvailableTakeDelivery == false){
+		if(input.JenisOrder == constants.OrderTakeDelivery && !layananMitra.AvailableTakeDelivery){
 			return orderResponse, errors.New("order ini tidak menerima take & delivery")
 		}
 
 		biayaLayanan = layananMitra.Harga
 	}else{
-		if(input.JenisOrder == constants.OrderTakeDelivery && layanan.AvailableTakeDelivery == false){
+		if(input.JenisOrder == constants.OrderTakeDelivery && !layanan.AvailableTakeDelivery){
 			return orderResponse, errors.New("order ini tidak menerima take & delivery")
 		}
 		biayaLayanan = layanan.Harga
