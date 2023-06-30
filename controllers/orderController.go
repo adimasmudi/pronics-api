@@ -62,3 +62,22 @@ func (h *orderHandler) FindAll(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *orderHandler) GetOrderDetail(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	orderId, _:= primitive.ObjectIDFromHex(c.Params("orderId"))
+
+	order, err := h.orderService.GetOrderDetail(ctx, orderId)
+
+	if err != nil{
+		response := helper.APIResponse("Get order detail Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get order detail success", http.StatusOK, "success", order)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
