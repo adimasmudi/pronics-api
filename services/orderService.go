@@ -9,6 +9,8 @@ import (
 	"pronics-api/inputs"
 	"pronics-api/models"
 	"pronics-api/repositories"
+	"sort"
+	"strings"
 	"time"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -21,6 +23,7 @@ type OrderService interface {
 	GetAllOrder(ctx context.Context)([]formatters.OrderResponse, error)
 	GetOrderDetail(ctx context.Context, orderId primitive.ObjectID) (formatters.OrderResponse, error)
 	UpdateStatusOrder(ctx context.Context, orderId primitive.ObjectID, input inputs.UpdateStatusOrderInput) (*mongo.UpdateResult, error)
+	GetAllOrderMitra(ctx context.Context, userId primitive.ObjectID, status string) ([]formatters.OrderResponse, error)
 }
 
 type orderService struct{
@@ -211,6 +214,10 @@ func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderRespon
 		orderResponses = append(orderResponses, orderMapping)
 	}
 
+	sort.Slice(orderResponses, func(i, j int) bool {
+		return orderResponses[i].TerakhirDiUpdate.Unix() < orderResponses[j].TerakhirDiUpdate.Unix()
+	})
+
 	return orderResponses, nil
 }
 
@@ -305,4 +312,102 @@ func (s *orderService) UpdateStatusOrder(ctx context.Context, orderId primitive.
 	}
 
 	return updatedOrder, nil
+}
+
+func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.ObjectID, status string)([]formatters.OrderResponse, error){
+
+	var orderResponses []formatters.OrderResponse
+
+	status = strings.ToLower(status)
+	if(status != "semua" && status != constants.OrderCanceled && status != constants.OrderCompleted && status != constants.OrderProcess && status != constants.OrderRejected && status != constants.OrderWaiting){
+		return orderResponses, errors.New("order hanya dapat ditampilkan 'semua' atau antara 'menunggu', 'selesai', 'proses', 'ditolak', 'dibatalkan'")
+	}
+	
+	var bidangData formatters.BidangResponse
+	var layananData formatters.LayananDetailMitraResponse
+
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
+
+	if err != nil{
+		return nil, errors.New("mitra tidak ditemukan")
+	}
+
+	var show string
+	if(status == "semua"){
+		show = ""
+	}else{
+		show = status 
+	}
+
+	orders, err := s.orderRepository.GetAllOrderMitra(ctx, mitra.ID)
+
+	if err != nil{
+		return orderResponses, err
+	}
+
+	for _, order := range orders{
+
+		if !strings.Contains(order.Status, show){
+			continue
+		}
+
+		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		bidang, err := s.bidangRepository.GetById(ctx, orderDetail.BidangId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		bidangData.ID = bidang.ID
+		bidangData.Kategori = kategori.NamaKategori
+		bidangData.NamaBidang = bidang.NamaBidang
+
+
+		layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
+
+		if err != nil{
+			layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
+
+			if err != nil{
+				return orderResponses, err
+			}
+
+			layananData.ID = layananMitra.ID
+			layananData.NamaLayanan = layananMitra.NamaLayanan
+			layananData.Harga = layananMitra.Harga
+		}else{
+			layananData.ID = layanan.ID
+			layananData.NamaLayanan = layanan.NamaLayanan
+			layananData.Harga = layanan.Harga
+		}
+
+		orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
+		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
+		orderMapping := helper.MapperOrder(order.CustomerId, order.MitraId,order,orderDetailMapping)
+
+		orderResponses = append(orderResponses, orderMapping)
+	}
+
+	sort.Slice(orderResponses, func(i, j int) bool {
+		return orderResponses[i].TerakhirDiUpdate.Unix() < orderResponses[j].TerakhirDiUpdate.Unix()
+	})
+
+	return orderResponses, nil
 }

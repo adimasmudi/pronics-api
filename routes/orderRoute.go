@@ -35,4 +35,5 @@ func OrderRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	order.Get("/all", middlewares.Auth, orderHandler.FindAll)
 	order.Get("/detail/:orderId",middlewares.Auth, orderHandler.GetOrderDetail)
 	order.Patch("/updateStatus/:orderId", middlewares.Auth, orderHandler.UpdateStatus)
+	order.Get("/getByMitra", middlewares.Auth, orderHandler.FindAllOrderMitra)
 }
