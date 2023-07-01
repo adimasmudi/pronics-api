@@ -130,3 +130,24 @@ func (h *orderHandler) FindAllOrderMitra(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *orderHandler) GetDirection(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	orderId, _:= primitive.ObjectIDFromHex(c.Params("orderId"))
+
+	direction, err := h.orderService.GetDirection(ctx, currentUserId, orderId)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to get direction", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get direction success", http.StatusOK, "success", direction)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

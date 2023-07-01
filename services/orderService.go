@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"pronics-api/configs"
 	"pronics-api/constants"
 	"pronics-api/formatters"
 	"pronics-api/helper"
@@ -16,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"googlemaps.github.io/maps"
 )
 
 type OrderService interface {
@@ -24,6 +26,7 @@ type OrderService interface {
 	GetOrderDetail(ctx context.Context, orderId primitive.ObjectID) (formatters.OrderResponse, error)
 	UpdateStatusOrder(ctx context.Context, orderId primitive.ObjectID, input inputs.UpdateStatusOrderInput) (*mongo.UpdateResult, error)
 	GetAllOrderMitra(ctx context.Context, userId primitive.ObjectID, status string) ([]formatters.OrderResponse, error)
+	GetDirection(ctx context.Context, userId primitive.ObjectID, orderId primitive.ObjectID)([]maps.Route, error)
 }
 
 type orderService struct{
@@ -410,4 +413,39 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 	})
 
 	return orderResponses, nil
+}
+
+func (s *orderService) GetDirection(ctx context.Context, userId primitive.ObjectID, orderId primitive.ObjectID)([]maps.Route, error){
+
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	order, err := s.orderRepository.GetById(ctx, orderId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+	if err != nil{
+		return nil, err
+	}
+
+	c := configs.InitMap()
+	// get directions
+	r := &maps.DirectionsRequest{
+		Origin:      mitra.Alamat,
+		Destination: orderDetail.AlamatPemesanan,
+	}
+
+	route, _, err := c.Directions(ctx, r)
+	if err != nil {
+		return route, err
+	}
+
+	return route, err
 }
