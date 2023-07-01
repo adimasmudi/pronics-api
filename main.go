@@ -51,6 +51,7 @@ func main() {
 	var orderCollection *mongo.Collection = configs.GetCollection(configs.DB,"orders")
 	var orderDetailCollection *mongo.Collection = configs.GetCollection(configs.DB,"orderDetails")
 	var orderPaymentCollection *mongo.Collection = configs.GetCollection(configs.DB,"orderPayments")
+	var savedCollection *mongo.Collection = configs.GetCollection(configs.DB, "saveds")
 
 	api := app.Group("/api/v1")
 	
@@ -70,6 +71,7 @@ func main() {
 	routes.OrderRoute(api,userCollection,mitraCollection,customerCollection,orderCollection,orderDetailCollection,orderPaymentCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
 	routes.OrderDetailRoute(api,orderCollection,orderDetailCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
 	routes.OrderPaymentRoute(api,mitraCollection,orderCollection,orderDetailCollection,orderPaymentCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
+	routes.SavedRoute(api, userCollection, customerCollection, mitraCollection, bidangCollection, kategoriCollection, layananCollection, layananMitraCollection, savedCollection)
 
 	port := os.Getenv("PORT")
 
