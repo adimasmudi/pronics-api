@@ -228,8 +228,7 @@ func (h *mitraHandler) ShowKatalogMitra(c *fiber.Ctx) error {
 	bidang := c.Query("bidang")
 	urut := c.Query("urut")
 
-	var searchFilter map[string] string
-	searchFilter = make(map[string] string)
+	searchFilter := make(map[string] string)
 
 	searchFilter["search"] = search
 	searchFilter["daerah"] = daerah
