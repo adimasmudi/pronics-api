@@ -388,8 +388,8 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 	var orderResponses []formatters.OrderResponse
 
 	status = strings.ToLower(status)
-	if(status != "semua" && status != constants.OrderCanceled && status != constants.OrderCompleted && status != constants.OrderProcess && status != constants.OrderRejected && status != constants.OrderWaiting){
-		return orderResponses, errors.New("order hanya dapat ditampilkan 'semua' atau antara 'menunggu', 'selesai', 'proses', 'ditolak', 'dibatalkan'")
+	if(status != "semua" && status != constants.OrderCanceled  && status != constants.OrderProcess  && status != constants.OrderWaiting){
+		return orderResponses, errors.New("order hanya dapat ditampilkan 'semua' atau antara 'menunggu', 'proses'")
 	}
 	
 	var bidangData formatters.BidangResponse
