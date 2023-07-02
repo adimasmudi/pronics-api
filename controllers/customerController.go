@@ -97,3 +97,5 @@ func (h *customerHandler) UpdateProfil(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+// get string alamat customer based on latitude and longitude

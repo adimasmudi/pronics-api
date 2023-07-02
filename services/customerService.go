@@ -57,6 +57,7 @@ func (s *customerService) GetCustomerProfile(ctx context.Context, ID primitive.O
 		alamatFormat := formatters.AlamatResponse{
 			ID : alamat.ID,
 			Alamat: alamat.Alamat,
+			IsUtama: alamat.IsUtama,
 		}
 
 		formatAlamats = append(formatAlamats, alamatFormat)
