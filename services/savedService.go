@@ -12,6 +12,7 @@ import (
 
 type SavedService interface {
 	Save(ctx context.Context, userId primitive.ObjectID, mitraId primitive.ObjectID) (*mongo.InsertOneResult, error)
+	DeleteSaved(ctx context.Context, savedId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
 type savedService struct{
@@ -52,4 +53,14 @@ func (s *savedService) Save(ctx context.Context, userId primitive.ObjectID, mitr
 	}
 
 	return savedAdded, nil
+}
+
+func (s *savedService) DeleteSaved(ctx context.Context, savedId primitive.ObjectID) (*mongo.DeleteResult, error){
+	deletedSaved, err := s.savedRepository.Delete(ctx, savedId)
+
+	if err != nil{
+		return deletedSaved, err
+	}
+
+	return deletedSaved, nil
 }

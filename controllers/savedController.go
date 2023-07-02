@@ -41,3 +41,23 @@ func (h *savedHandler) Save(c *fiber.Ctx) error{
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+// delete from saved
+func (h *savedHandler) DeleteSaved(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	savedId,_ := primitive.ObjectIDFromHex(c.Params("savedId"))
+
+	deletedSaved, err := h.savedService.DeleteSaved(ctx, savedId)
+
+	if err != nil{
+		response := helper.APIResponse("Delete item from saved failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Delete item from saved success", http.StatusOK, "success", deletedSaved)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
