@@ -16,3 +16,12 @@ type OrderResponse struct {
 	OrderDetail OrderDetailResponse `json:"order_detail"`
 	TerakhirDiUpdate time.Time `json:"last_update"`
 }
+
+type OrderHistoryResponse struct{
+	ID primitive.ObjectID `json:"id"`
+	Name string `json:"nama"`
+	Layanan string `json:"layanan"`
+	Status string `json:"status"`
+	AlamatPemesanan string `json:"alamat_pemesanan"`
+	TotalBayar int `json:"total_bayar"`
+}

@@ -151,3 +151,24 @@ func (h *orderHandler) GetDirection(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *orderHandler) FindAllOrderHistory(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	status := c.Query("status")
+
+	orders, err := h.orderService.GetAllOrderHistory(ctx, currentUserId, status)
+
+	if err != nil{
+		response := helper.APIResponse("Get all order history Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get all order history success", http.StatusOK, "success", orders)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

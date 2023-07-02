@@ -17,6 +17,7 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
+	"golang.org/x/exp/slices"
 	"googlemaps.github.io/maps"
 )
 
@@ -27,6 +28,7 @@ type OrderService interface {
 	UpdateStatusOrder(ctx context.Context, orderId primitive.ObjectID, input inputs.UpdateStatusOrderInput) (*mongo.UpdateResult, error)
 	GetAllOrderMitra(ctx context.Context, userId primitive.ObjectID, status string) ([]formatters.OrderResponse, error)
 	GetDirection(ctx context.Context, userId primitive.ObjectID, orderId primitive.ObjectID)([]maps.Route, error)
+	GetAllOrderHistory(ctx context.Context, userId primitive.ObjectID, filter string) ([]formatters.OrderHistoryResponse, error)
 }
 
 type orderService struct{
@@ -564,4 +566,161 @@ func (s *orderService) GetDirection(ctx context.Context, userId primitive.Object
 	}
 
 	return route, err
+}
+
+func (s *orderService) GetAllOrderHistory(ctx context.Context, userId primitive.ObjectID, filter string) ([]formatters.OrderHistoryResponse, error){
+	var allHistories []formatters.OrderHistoryResponse
+
+	if filter == ""{
+		return allHistories, errors.New("filter harus diisi dengan nilai antara 'semua','selesai','menunggu','proses','ditolak','dibatalkan'")
+	}
+
+	user, err := s.userRepository.GetUserById(ctx, userId)
+
+	if err != nil{
+		return allHistories, err
+	}
+
+	var typeUser string
+	var orders []models.Order
+	if user.Type == constants.UserMitra{
+
+		if filter != "semua" && filter != constants.OrderCanceled && filter != constants.OrderRejected && filter != constants.OrderCompleted{
+			return allHistories, errors.New("history mitra hanya bisa dengan filter 'semua', 'dibatalkan', 'ditolak', 'selesai'")
+		}
+
+		mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		typeUser = user.Type
+
+		orders, err = s.orderRepository.GetAllOrderMitra(ctx, mitra.ID)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		for idx,order := range orders{
+			if order.Status == constants.OrderProcess || order.Status == constants.OrderWaiting || order.Status == constants.OrderTemporary{
+				orders = slices.Delete(orders, idx, idx + 1)
+			}
+		}
+
+	}else if user.Type == constants.UserCustomer{
+		
+		typeUser = user.Type
+
+		customer, err := s.customerRepository.GetCustomerByIdUser(ctx, userId)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		orders, err = s.orderRepository.GetAllOrderCustomer(ctx, customer.ID)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		for idx,order := range orders{
+			if order.Status == constants.OrderTemporary{
+				orders = slices.Delete(orders, idx, idx + 1)
+			}
+		}
+	}else{
+		return allHistories, err
+	}
+	
+	if(filter != "semua"){
+		for idx,order := range orders{
+			if order.Status != filter{
+				orders = slices.Delete(orders, idx, idx + 1)
+			}
+		}
+	}
+
+	for _, order := range orders{
+		var historyResponse formatters.OrderHistoryResponse
+
+		var name string
+		var namaToko = ""
+		var idUser primitive.ObjectID
+
+		if typeUser == constants.UserMitra{
+			customer, err := s.customerRepository.GetCustomerById(ctx, order.CustomerId)
+
+			if err != nil{
+				return allHistories, err
+			}
+
+			idUser = customer.UserId
+		}else if typeUser == constants.UserCustomer{
+			mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
+
+			if err != nil{
+				return allHistories, err
+			}
+
+			idUser = mitra.UserId
+			namaToko = mitra.NamaToko
+		}else{
+			return allHistories, errors.New("type user harus antara mitra atau customer untuk melakukan aksi ini")
+		}
+
+		user, err := s.userRepository.GetUserById(ctx, idUser)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		name = user.NamaLengkap
+		
+		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+
+		if err != nil{
+			return allHistories, err
+		}
+
+		layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
+		var namaLayanan string
+
+		if err != nil{
+			layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
+
+			if err != nil{
+				return allHistories, err
+			}
+
+			namaLayanan = layananMitra.NamaLayanan
+		}else{
+			namaLayanan = layanan.NamaLayanan
+		}
+
+		historyResponse.ID = order.ID
+
+		if namaToko != ""{
+			historyResponse.Name = namaToko
+		}else{
+			historyResponse.Name = name
+		}
+
+		historyResponse.Status = order.Status
+		historyResponse.AlamatPemesanan = orderDetail.AlamatPemesanan
+		historyResponse.Layanan = namaLayanan
+		historyResponse.TotalBayar = int(orderPayment.TotalBiaya)
+		
+		allHistories = append(allHistories, historyResponse)
+
+	}
+
+	return allHistories, nil
 }
