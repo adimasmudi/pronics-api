@@ -128,7 +128,13 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 			}
 		}
 
-		orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
+		jarak, err := helper.DistanceCalculation(orderDetailToDisplay.AlamatPemesanan, mitra.Alamat)
+
+		if err != nil{
+			return orderData, err
+		}
+
+		orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay, jarak)
 		orderDetailData = helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
 		customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
 		mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
@@ -248,7 +254,13 @@ func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderRespon
 			return orderResponses, err
 		}
 
-		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
+		jarak, err := helper.DistanceCalculation(orderDetail.AlamatPemesanan, mitra.Alamat)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		orderPaymentMapping := helper.MapperOrderPayment(orderPayment, jarak)
 		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
 		customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
 		mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
@@ -347,7 +359,13 @@ func (s *orderService) GetOrderDetail(ctx context.Context, orderId primitive.Obj
 		return orderResponse, err
 	}
 
-	orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
+	jarak, err := helper.DistanceCalculation(orderDetail.AlamatPemesanan, mitra.Alamat)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	orderPaymentMapping := helper.MapperOrderPayment(orderPayment, jarak)
 	orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
 	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
 	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
@@ -491,7 +509,13 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 			return orderResponses, err
 		}
 
-		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
+		jarak, err := helper.DistanceCalculation(orderDetail.AlamatPemesanan, mitra.Alamat)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		orderPaymentMapping := helper.MapperOrderPayment(orderPayment, jarak)
 		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
 		customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
 		mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)

@@ -13,6 +13,7 @@ type OrderPaymentResponse struct {
 	Diskon float64 `json:"diskon"`
 	BiayaAplikasi float64 `json:"biaya_aplikasi"`
 	TotalBiaya float64 `json:"total_biaya"`
+	Jarak float64 `json:"jarak"`
 	MetodePembayaran string `json:"metode_pembayaran"`
 	BuktiBayar string `json:"bukti_bayar"`
 	LastUpdate time.Time `json:"last_update"`

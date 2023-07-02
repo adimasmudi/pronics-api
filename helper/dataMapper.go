@@ -81,7 +81,7 @@ func MapperOrderDetail(orderDetail models.OrderDetail, bidang formatters.BidangR
 	return orderData
 }
 
-func MapperOrderPayment(orderPayment models.OrderPayment) formatters.OrderPaymentResponse{
+func MapperOrderPayment(orderPayment models.OrderPayment, jarak float64) formatters.OrderPaymentResponse{
 	var orderData formatters.OrderPaymentResponse
 
 	orderData.ID = orderPayment.ID
@@ -91,6 +91,7 @@ func MapperOrderPayment(orderPayment models.OrderPayment) formatters.OrderPaymen
 	orderData.BuktiBayar = orderPayment.BuktiBayar
 	orderData.Diskon = orderPayment.Diskon
 	orderData.TotalBiaya = orderPayment.TotalBiaya
+	orderData.Jarak = jarak
 	orderData.MetodePembayaran = orderPayment.MetodePembayaran
 	orderData.LastUpdate = orderPayment.UpdatedAt
 

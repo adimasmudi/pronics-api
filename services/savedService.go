@@ -2,12 +2,8 @@ package services
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
-	"net/http"
-	"os"
 	"pronics-api/constants"
 	"pronics-api/formatters"
 	"pronics-api/helper"
@@ -224,42 +220,14 @@ func (s *savedService) ShowAll(ctx context.Context, userId primitive.ObjectID, s
 		katalogMitra.MinPrice = min
 		katalogMitra.MaxPrice = max
 
-		url := fmt.Sprintf("https://maps.googleapis.com/maps/api/distancematrix/json?origins=%s&destinations=%s&units=imperial&key=%s",alamatCustomer,mitra.Alamat,os.Getenv("MAPS_API_KEY"))
-		url = strings.Replace(url, " ", "%20", -1)
-		method := "GET"
-
-		fmt.Println(url)
-
-		client := &http.Client {}
-		req, err := http.NewRequest(method, url, nil)
-
-		if err != nil {
-			return nil, err
-		}
-		res, err := client.Do(req)
-		if err != nil {
-			return nil, err
-		}
 		
-		defer res.Body.Close()
+		jarak, err := helper.DistanceCalculation(alamatCustomer, mitra.Alamat)
 
-		body, err := io.ReadAll(res.Body)
-
-		if err != nil {
-			return nil, err
+		if err != nil{
+			return savedMitras, err
 		}
 
-		var distanceMatrix helper.DistanceMatrixResult
-
-		
-		err = json.Unmarshal(body, &distanceMatrix)
-		if err != nil {
-			return nil, err
-		}
-
-		fmt.Println(distanceMatrix)
-
-		katalogMitra.Distance = distanceMatrix.Rows[0].Elements[0].Distance.Value
+		katalogMitra.Distance = jarak
 
 		savedResponse.ID = savedMitra.ID
 		savedResponse.Mitra = katalogMitra

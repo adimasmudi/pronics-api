@@ -287,7 +287,13 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		return orderResponse, err
 	}
 
-	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
+	jarak, err := helper.DistanceCalculation(orderDetailToDisplay.AlamatPemesanan,mitra.Alamat)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay, jarak)
 	orderDetailData := helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
 	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
 	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
@@ -442,7 +448,13 @@ func (s *orderPaymentService) ConfirmPayment(ctx context.Context, orderPaymentId
 		return orderData, err
 	}
 
-	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
+	jarak, err := helper.DistanceCalculation(orderDetailToDisplay.AlamatPemesanan, mitra.Alamat)
+
+	if err != nil{
+		return orderData, err
+	}
+	
+	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay, jarak)
 	orderDetailData := helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
 	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
 	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
