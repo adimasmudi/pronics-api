@@ -69,8 +69,8 @@ func main() {
 	routes.LayananRoute(api, layananCollection, bidangCollection)
 	routes.LayananMitraRoute(api, layananMitraCollection,bidangCollection, mitraCollection)
 	routes.OrderRoute(api,userCollection,mitraCollection,customerCollection,orderCollection,orderDetailCollection,orderPaymentCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
-	routes.OrderDetailRoute(api,orderCollection,orderDetailCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
-	routes.OrderPaymentRoute(api,mitraCollection,orderCollection,orderDetailCollection,orderPaymentCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
+	routes.OrderDetailRoute(api,userCollection,mitraCollection,customerCollection,orderCollection,orderDetailCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
+	routes.OrderPaymentRoute(api,userCollection,mitraCollection,customerCollection,orderCollection,orderDetailCollection,orderPaymentCollection,bidangCollection,kategoriCollection,layananCollection,layananMitraCollection)
 	routes.SavedRoute(api, userCollection, customerCollection, mitraCollection, bidangCollection, kategoriCollection, layananCollection, layananMitraCollection, savedCollection)
 
 	port := os.Getenv("PORT")

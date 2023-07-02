@@ -27,7 +27,9 @@ type OrderPaymentService interface {
 }
 
 type orderPaymentService struct{
+	userRepository     repositories.UserRepository
 	mitraRepository repositories.MitraRepository
+	customerRepository repositories.CustomerRepository
 	orderRepository repositories.OrderRepository
 	orderDetailRepository repositories.OrderDetailRepository
 	orderPaymentRepository repositories.OrderPaymentRepository
@@ -37,8 +39,8 @@ type orderPaymentService struct{
 	layananMitraRepository repositories.LayananMitraRepository
 }
 
-func NewOrderPaymentService(mitraRepository repositories.MitraRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository) *orderPaymentService{
-	return &orderPaymentService{mitraRepository,orderRepository, orderDetailRepository,orderPaymentRepository,bidangRepository, kategoriRepository, layananRepository, layananMitraRepository}
+func NewOrderPaymentService(userRepository repositories.UserRepository,mitraRepository repositories.MitraRepository,customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository) *orderPaymentService{
+	return &orderPaymentService{userRepository,mitraRepository,customerRepository,orderRepository, orderDetailRepository,orderPaymentRepository,bidangRepository, kategoriRepository, layananRepository, layananMitraRepository}
 }
 
 func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, orderDetailId primitive.ObjectID, input inputs.AddOrUpdateOrderPaymentInput) (formatters.OrderResponse, error){
@@ -61,7 +63,25 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		return orderResponse, errors.New("order sudah diproses, bukan temporary order")
 	}
 
+	customer, err := s.customerRepository.GetCustomerById(ctx, order.CustomerId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
 	mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	userCustomer, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	userMitra, err := s.userRepository.GetUserById(ctx, mitra.UserId)
 
 	if err != nil{
 		return orderResponse, err
@@ -269,7 +289,9 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 
 	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
 	orderDetailData := helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
-	orderData :=helper.MapperOrder(orderToDisplay.CustomerId, orderToDisplay.MitraId, orderToDisplay, orderDetailData)
+	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+	orderData :=helper.MapperOrder(customerResponse, mitraResponse, orderToDisplay, orderDetailData)
 
 	return orderData, nil
 }
@@ -298,6 +320,30 @@ func (s *orderPaymentService) ConfirmPayment(ctx context.Context, orderPaymentId
 
 	if order.Status != constants.OrderTemporary{
 		return orderData, errors.New("order sudah diproses, bukan temporary order")
+	}
+
+	customer, err := s.customerRepository.GetCustomerById(ctx, order.CustomerId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	userCustomer, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	userMitra, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+	if err != nil{
+		return orderData, err
 	}
 
 	if fileName != ""{
@@ -398,7 +444,9 @@ func (s *orderPaymentService) ConfirmPayment(ctx context.Context, orderPaymentId
 
 	orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
 	orderDetailData := helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
-	orderData =helper.MapperOrder(orderToDisplay.CustomerId, orderToDisplay.MitraId, orderToDisplay, orderDetailData)
+	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+	orderData =helper.MapperOrder(customerResponse, mitraResponse, orderToDisplay, orderDetailData)
 
 	return orderData, nil
 }

@@ -10,9 +10,11 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func OrderDetailRoute(api fiber.Router, orderCollection *mongo.Collection, orderDetailCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection) {
+func OrderDetailRoute(api fiber.Router,userCollection *mongo.Collection, mitraCollection *mongo.Collection, customerCollection *mongo.Collection, orderCollection *mongo.Collection, orderDetailCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection) {
 	// repositories
-
+	userRepository := repositories.NewUserRepository(userCollection)
+	mitraRepository := repositories.NewMitraRepository(mitraCollection)
+	customerRepository := repositories.NewCustomerRepository(customerCollection)
 	orderRepository := repositories.NewOrderRepository(orderCollection)
 	orderDetailRepository := repositories.NewOrderDetailRepository(orderDetailCollection)
 	bidangRepository := repositories.NewBidangRepository(bidangCollection)
@@ -21,7 +23,7 @@ func OrderDetailRoute(api fiber.Router, orderCollection *mongo.Collection, order
 	layananMitraRepository := repositories.NewLayananMitraRepository(layananMitraCollection)
 
 	// services
-	orderDetailService := services.NewOrderDetailService(orderRepository, orderDetailRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository)
+	orderDetailService := services.NewOrderDetailService(userRepository, mitraRepository, customerRepository,orderRepository, orderDetailRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository)
 
 	// controllers
 	orderDetailHandler := controllers.NewOrderDetailHandler(orderDetailService)

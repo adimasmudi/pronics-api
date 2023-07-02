@@ -66,6 +66,18 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 		return orderData, err
 	}
 
+	userCustomer, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+	if err != nil{
+		return orderData, err
+	}
+
+	userMitra, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+	if err != nil{
+		return orderData, err
+	}
+
 	order, err := s.orderRepository.GetOrderTemporaryByCustomerIdNMitraId(ctx, customer.ID, mitra.ID)
 
 
@@ -117,9 +129,10 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 		}
 
 		orderPaymentData := helper.MapperOrderPayment(orderPaymentToDisplay)
-
 		orderDetailData = helper.MapperOrderDetail(orderDetailToDisplay,bidangData,layananData,orderPaymentData)
-		orderData = helper.MapperOrder(customer.ID, mitra.ID, order, orderDetailData)
+		customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+		mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+		orderData = helper.MapperOrder(customerResponse, mitraResponse, order, orderDetailData)
 
 		return orderData, errors.New(constants.TemporaryOrderExistMessage)
 	}
@@ -144,8 +157,9 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 	if err != nil{
 		return orderData, err
 	}
-
-	orderData = helper.MapperOrder(customer.ID, mitra.ID, orderAdded, orderDetailData)
+	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+	orderData = helper.MapperOrder(customerResponse, mitraResponse, orderAdded, orderDetailData)
 
 	return orderData, nil
 }
@@ -163,6 +177,30 @@ func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderRespon
 	}
 
 	for _, order := range orders{
+		customer, err := s.customerRepository.GetCustomerById(ctx, order.CustomerId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		userCustomer, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		userMitra, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
 		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
 
 		if err != nil{
@@ -212,7 +250,9 @@ func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderRespon
 
 		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
 		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
-		orderMapping := helper.MapperOrder(order.CustomerId, order.MitraId,order,orderDetailMapping)
+		customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+		mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+		orderMapping := helper.MapperOrder(customerResponse, mitraResponse,order,orderDetailMapping)
 
 		orderResponses = append(orderResponses, orderMapping)
 	}
@@ -233,61 +273,87 @@ func (s *orderService) GetOrderDetail(ctx context.Context, orderId primitive.Obj
 		return orderResponse, err
 	}
 
+	customer, err := s.customerRepository.GetCustomerById(ctx, order.CustomerId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	userCustomer, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	userMitra, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
 	var bidangData formatters.BidangResponse
 	var layananData formatters.LayananDetailMitraResponse
 
 	orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
 
-		if err != nil{
-			return orderResponse, err
-		}
+	if err != nil{
+		return orderResponse, err
+	}
 
-		bidang, err := s.bidangRepository.GetById(ctx, orderDetail.BidangId)
+	bidang, err := s.bidangRepository.GetById(ctx, orderDetail.BidangId)
 
-		if err != nil{
-			return orderResponse, err
-		}
+	if err != nil{
+		return orderResponse, err
+	}
 
-		kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
+	kategori, err := s.kategoriRepository.GetById(ctx, bidang.KategoriId)
 
-		if err != nil{
-			return orderResponse, err
-		}
+	if err != nil{
+		return orderResponse, err
+	}
 
-		bidangData.ID = bidang.ID
-		bidangData.Kategori = kategori.NamaKategori
-		bidangData.NamaBidang = bidang.NamaBidang
+	bidangData.ID = bidang.ID
+	bidangData.Kategori = kategori.NamaKategori
+	bidangData.NamaBidang = bidang.NamaBidang
 
 
-		layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
+	layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
 
-		if err != nil{
-			layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
-
-			if err != nil{
-				return orderResponse, err
-			}
-
-			layananData.ID = layananMitra.ID
-			layananData.NamaLayanan = layananMitra.NamaLayanan
-			layananData.Harga = layananMitra.Harga
-		}else{
-			layananData.ID = layanan.ID
-			layananData.NamaLayanan = layanan.NamaLayanan
-			layananData.Harga = layanan.Harga
-		}
-
-		orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+	if err != nil{
+		layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
 
 		if err != nil{
 			return orderResponse, err
 		}
 
-		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
-		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
-		orderResponse = helper.MapperOrder(order.CustomerId, order.MitraId,order,orderDetailMapping)
+		layananData.ID = layananMitra.ID
+		layananData.NamaLayanan = layananMitra.NamaLayanan
+		layananData.Harga = layananMitra.Harga
+	}else{
+		layananData.ID = layanan.ID
+		layananData.NamaLayanan = layanan.NamaLayanan
+		layananData.Harga = layanan.Harga
+	}
 
-		return orderResponse, nil
+	orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+
+	if err != nil{
+		return orderResponse, err
+	}
+
+	orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
+	orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
+	customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+	mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+	orderResponse = helper.MapperOrder(customerResponse, mitraResponse,order,orderDetailMapping)
+
+	return orderResponse, nil
 }
 
 func (s *orderService) UpdateStatusOrder(ctx context.Context, orderId primitive.ObjectID, input inputs.UpdateStatusOrderInput) (*mongo.UpdateResult, error){
@@ -354,6 +420,30 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 			continue
 		}
 
+		customer, err := s.customerRepository.GetCustomerById(ctx, order.CustomerId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		mitra, err := s.mitraRepository.GetMitraById(ctx, order.MitraId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		userCustomer, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
+		userMitra, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+		if err != nil{
+			return orderResponses, err
+		}
+
 		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
 
 		if err != nil{
@@ -403,7 +493,9 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 
 		orderPaymentMapping := helper.MapperOrderPayment(orderPayment)
 		orderDetailMapping := helper.MapperOrderDetail(orderDetail,bidangData,layananData,orderPaymentMapping)
-		orderMapping := helper.MapperOrder(order.CustomerId, order.MitraId,order,orderDetailMapping)
+		customerResponse := helper.MapperCustomer(userCustomer,customer,nil)
+		mitraResponse := helper.MapperMitra(userMitra, mitra,models.WilayahCakupan{}, nil)
+		orderMapping := helper.MapperOrder(customerResponse, mitraResponse,order,orderDetailMapping)
 
 		orderResponses = append(orderResponses, orderMapping)
 	}

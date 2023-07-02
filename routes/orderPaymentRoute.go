@@ -10,10 +10,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func OrderPaymentRoute(api fiber.Router, mitraCollection *mongo.Collection, orderCollection *mongo.Collection, orderDetailCollection *mongo.Collection, orderPaymentCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection) {
+func OrderPaymentRoute(api fiber.Router,userCollection *mongo.Collection, mitraCollection *mongo.Collection,customerCollection *mongo.Collection, orderCollection *mongo.Collection, orderDetailCollection *mongo.Collection, orderPaymentCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection) {
 	// repositories
 
+	userRepository := repositories.NewUserRepository(userCollection)
 	mitraRepository := repositories.NewMitraRepository(mitraCollection)
+	customerRepository := repositories.NewCustomerRepository(customerCollection)
 	orderRepository := repositories.NewOrderRepository(orderCollection)
 	orderDetailRepository := repositories.NewOrderDetailRepository(orderDetailCollection)
 	orderPaymentRepository := repositories.NewOrderPaymentRepository(orderPaymentCollection)
@@ -23,7 +25,7 @@ func OrderPaymentRoute(api fiber.Router, mitraCollection *mongo.Collection, orde
 	layananMitraRepository := repositories.NewLayananMitraRepository(layananMitraCollection)
 
 	// services
-	orderPaymentService := services.NewOrderPaymentService(mitraRepository,orderRepository, orderDetailRepository,orderPaymentRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository)
+	orderPaymentService := services.NewOrderPaymentService(userRepository,mitraRepository,customerRepository,orderRepository, orderDetailRepository,orderPaymentRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository)
 
 	// controllers
 	orderPaymentHandler := controllers.NewOrderPaymentHandler(orderPaymentService)
