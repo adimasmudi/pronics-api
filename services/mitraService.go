@@ -335,13 +335,10 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 	wilayahToSearch := strings.ToLower(searchFilter["daerah"])
 	bidangToSearch := strings.ToLower(searchFilter["bidang"])
 	sortBasedOn := strings.ToLower(searchFilter["urut"])
+	alamatCustomer := strings.ToLower(searchFilter["alamatCustomer"])
 
-	var alamatCustomer string
-
-	if(sortBasedOn != "" && strings.Contains(sortBasedOn, constants.Terdekat)){
-		terdekatArr := strings.Split(sortBasedOn, "-")
-		sortBasedOn = terdekatArr[0]
-		alamatCustomer = strings.TrimSpace(terdekatArr[1])
+	if alamatCustomer == ""{
+		return nil, errors.New("alamat customer wajib diisi")
 	}
 
 	for _, mitra := range allMitra{

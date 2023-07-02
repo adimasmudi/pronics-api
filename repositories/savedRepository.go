@@ -13,6 +13,7 @@ type SavedRepository interface {
 	Save(ctx context.Context, newSaved models.Saved) (*mongo.InsertOneResult, error)
 	GetAll(ctx context.Context, customerId primitive.ObjectID) ([]models.Saved, error)
 	Delete(ctx context.Context, savedId primitive.ObjectID) (*mongo.DeleteResult, error)
+	GetByIdMitra(ctx context.Context, mitraId primitive.ObjectID) (models.Saved, error)
 }
 
 type savedRepository struct{
@@ -70,4 +71,15 @@ func (r *savedRepository) Delete(ctx context.Context, savedId primitive.ObjectID
 	}
 
 	return result, nil
+}
+
+func (r *savedRepository) GetByIdMitra(ctx context.Context, mitraId primitive.ObjectID) (models.Saved, error){
+	var saved models.Saved
+	err := r.DB.FindOne(ctx, bson.M{"mitra_id": mitraId}).Decode(&saved)
+
+	if err != nil{
+		return saved, err
+	}
+
+	return saved, nil
 }

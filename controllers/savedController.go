@@ -42,6 +42,40 @@ func (h *savedHandler) Save(c *fiber.Ctx) error{
 	return nil
 }
 
+// get all saved mitra
+func (h *savedHandler) ShowAllSaved(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	search := c.Query("search")
+	daerah := c.Query("daerah")
+	bidang := c.Query("bidang")
+	urut := c.Query("urut")
+	alamatCustomer := c.Query("alamatCustomer")
+
+	searchFilter := make(map[string] string)
+
+	searchFilter["search"] = search
+	searchFilter["daerah"] = daerah
+	searchFilter["bidang"] = bidang
+	searchFilter["urut"] = urut
+	searchFilter["alamatCustomer"] = alamatCustomer
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	katalogMitra, err := h.savedService.ShowAll(ctx, currentUserId, searchFilter)
+
+	if err != nil {
+		response := helper.APIResponse("Get all saved mitra failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get all saved mitra success", http.StatusOK, "success", katalogMitra)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
 // delete from saved
 func (h *savedHandler) DeleteSaved(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)

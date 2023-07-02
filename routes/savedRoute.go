@@ -10,11 +10,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection, savedCollection *mongo.Collection) {
+func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection,wilayahCakupanCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection, savedCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
 	customerRepository := repositories.NewCustomerRepository(customerCollection)
 	mitraRepository := repositories.NewMitraRepository(mitraCollection)
+	wilayahCakupanRepository := repositories.NewWilayahRepository(wilayahCakupanCollection)
 	bidangRepository := repositories.NewBidangRepository(bidangCollection)
 	kategoriRepository := repositories.NewKategoriRepository(kategoriCollection)
 	layananRepository := repositories.NewLayananRepository(layananCollection)
@@ -22,7 +23,7 @@ func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerColl
 	savedRepository := repositories.NewSavedRepository(savedCollection)
 
 	// services
-	savedService := services.NewSavedService(userRepository, customerRepository, mitraRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, savedRepository)
+	savedService := services.NewSavedService(userRepository, customerRepository, mitraRepository,wilayahCakupanRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, savedRepository)
 
 	// controllers
 	savedHandler := controllers.NewSavedHandler(savedService)
@@ -31,4 +32,5 @@ func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerColl
 
 	savedRoute.Post("/add/:mitraId", middlewares.Auth, savedHandler.Save)
 	savedRoute.Delete("/delete/:savedId", middlewares.Auth, savedHandler.DeleteSaved)
+	savedRoute.Get("/all", middlewares.Auth, savedHandler.ShowAllSaved)
 }
