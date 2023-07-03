@@ -24,4 +24,5 @@ type OrderHistoryResponse struct{
 	Status string `json:"status"`
 	AlamatPemesanan string `json:"alamat_pemesanan"`
 	TotalBayar int `json:"total_bayar"`
+	TanggalOrder time.Time `json:"tanggal_order"`
 }

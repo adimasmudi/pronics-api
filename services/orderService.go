@@ -717,10 +717,15 @@ func (s *orderService) GetAllOrderHistory(ctx context.Context, userId primitive.
 		historyResponse.AlamatPemesanan = orderDetail.AlamatPemesanan
 		historyResponse.Layanan = namaLayanan
 		historyResponse.TotalBayar = int(orderPayment.TotalBiaya)
+		historyResponse.TanggalOrder = order.TanggalOrderSelesai
 		
 		allHistories = append(allHistories, historyResponse)
 
 	}
+
+	sort.Slice(allHistories, func(i, j int) bool {
+		return allHistories[i].TanggalOrder.Unix() < allHistories[j].TanggalOrder.Unix()
+	})
 
 	return allHistories, nil
 }
