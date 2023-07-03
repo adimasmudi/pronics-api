@@ -18,9 +18,9 @@ import (
 )
 
 type KomentarService interface {
-	AddKomentar(ctx context.Context, orderId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.InsertOneResult, error)
+	AddKomentar(ctx context.Context, userId primitive.ObjectID, orderId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.InsertOneResult, error)
 	SeeKomentar(ctx context.Context, orderId primitive.ObjectID) (formatters.KomentarResponse, error)
-	UpdateKomentar(ctx context.Context, komentarId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.UpdateResult, error)
+	UpdateKomentar(ctx context.Context,userId primitive.ObjectID, komentarId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.UpdateResult, error)
 	ResponseKomentar(ctx context.Context, userId primitive.ObjectID, komentarId primitive.ObjectID, tipe string) (*mongo.UpdateResult, error)
 	// DeleteKomentar(ctx context.Context, komentarId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
@@ -41,7 +41,7 @@ func NewKomentarService(userRepository repositories.UserRepository, mitraReposit
 }
 
 // add komentar
-func (s *komentarService) AddKomentar(ctx context.Context,orderId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.InsertOneResult, error){
+func (s *komentarService) AddKomentar(ctx context.Context,userId primitive.ObjectID,orderId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.InsertOneResult, error){
 	
 	order, err := s.orderRepository.GetById(ctx, orderId)
 
@@ -59,6 +59,27 @@ func (s *komentarService) AddKomentar(ctx context.Context,orderId primitive.Obje
 
 	if err != nil{
 		return nil, err
+	}
+
+	user, err := s.userRepository.GetUserById(ctx, userId)
+
+	if err != nil{
+		return nil, err
+	}
+	if user.ID != customer.UserId{
+		return nil, errors.New("anda tidak punya akses untuk memberi komentar di order ini")
+	}
+
+	customerCompare, err := s.customerRepository.GetCustomerByIdUser(ctx, user.ID)
+
+	if err != nil{
+		return nil, err
+	}
+
+	komentar, err := s.komentarRepository.GetByOrderId(ctx, order.ID)
+
+	if err == nil && komentar.CustomerId == customerCompare.ID{
+		return nil, errors.New("anda sudah memberi komentar ke order ini sebelumnya")
 	}
 
 	var gambarKomentarArr []string
@@ -153,12 +174,22 @@ func (s *komentarService) SeeKomentar(ctx context.Context, orderId primitive.Obj
 }
 
 // update komentar
-func (s *komentarService) UpdateKomentar(ctx context.Context,komentarId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.UpdateResult, error){
+func (s *komentarService) UpdateKomentar(ctx context.Context,userId primitive.ObjectID, komentarId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.UpdateResult, error){
 	
 	komentar, err := s.komentarRepository.GetById(ctx, komentarId)
 
 	if err != nil{
 		return nil, err
+	}
+
+	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, userId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	if komentar.CustomerId != customer.ID{
+		return nil, errors.New("anda tidak punya akses untuk memberi komentar di order ini")
 	}
 
 	gambarKomentarArr := komentar.GambarKomentar

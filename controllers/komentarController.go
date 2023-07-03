@@ -25,6 +25,7 @@ func (h *komentarHandler) AddKomentar(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
 	orderId, _ := primitive.ObjectIDFromHex(c.Params("orderId"))
 
 	var input inputs.KomentarInput
@@ -69,7 +70,7 @@ func (h *komentarHandler) AddKomentar(c *fiber.Ctx) error {
 		fileNames = append(fileNames, fileName)
 	}
 
-	addedKomentar, err := h.komentarService.AddKomentar(ctx, orderId,input, fileNames)
+	addedKomentar, err := h.komentarService.AddKomentar(ctx,currentUserId, orderId,input, fileNames)
 
 	if err != nil{
 		response := helper.APIResponse("Error add komentar", http.StatusBadRequest, "error", err.Error())
@@ -105,6 +106,7 @@ func (h *komentarHandler) UpdateKomentar(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
 	komentarId, _ := primitive.ObjectIDFromHex(c.Params("komentarId"))
 
 	var input inputs.KomentarInput
@@ -149,7 +151,7 @@ func (h *komentarHandler) UpdateKomentar(c *fiber.Ctx) error {
 		fileNames = append(fileNames, fileName)
 	}
 
-	updatedKomentar, err := h.komentarService.UpdateKomentar(ctx, komentarId,input, fileNames)
+	updatedKomentar, err := h.komentarService.UpdateKomentar(ctx,currentUserId, komentarId,input, fileNames)
 
 	if err != nil{
 		response := helper.APIResponse("Error update komentar", http.StatusBadRequest, "error", err.Error())
