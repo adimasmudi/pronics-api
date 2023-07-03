@@ -21,7 +21,6 @@ type KomentarResponse struct {
 
 type KomentarDetailMitraResponse struct{
 	OverallRating float64 `json:"overall_rating"`
-	RatingCount int `json:"rating_count"`
-	CommentCount int `json:"comment_count"`
-	AllKomentar []KomentarResponse `json:"comments"`
+	UlasanCount int `json:"total_ulasan"`
+	AllKomentar []KomentarResponse `json:"semua_komentar"`
 }

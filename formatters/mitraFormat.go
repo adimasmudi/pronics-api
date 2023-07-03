@@ -25,7 +25,7 @@ type KatalogResponse struct{
 	MaxPrice float64 `json:"maximal_price"`
 	Distance float64 `json:"jarak"`
 	Bidang []BidangResponse `json:"bidang"`
-	Rating int `json:"rating"`
+	Rating float64 `json:"rating"`
 }
 type DetailMitraResponse struct{
 	ID primitive.ObjectID `json:"id"`

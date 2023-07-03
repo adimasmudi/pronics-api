@@ -42,10 +42,14 @@ type mitraService struct {
 	kategoriRepository repositories.KategoriRepository
 	layananRepository repositories.LayananRepository
 	layananMitraRepository repositories.LayananMitraRepository
+	komentarRepository repositories.KomentarRepository
+	customerRepository repositories.CustomerRepository
+	orderRepository repositories.OrderRepository
+	orderDetailRepository repositories.OrderDetailRepository
 }
 
-func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository) *mitraService{
-	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository}
+func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository) *mitraService{
+	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository}
 }
 
 func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error){
@@ -374,7 +378,19 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 
 		katalogMitra.ID = mitra.ID
 		katalogMitra.Gambar = mitra.GambarMitra
-		katalogMitra.Rating = 5 // sementara
+
+		comments, err := s.komentarRepository.GetAllByMitraId(ctx, mitra.ID)
+
+		if err != nil {
+			katalogMitra.Rating = 0
+		}
+
+		var sumRating float64
+		for _, comment := range comments{
+			sumRating += comment.Rating
+		}
+
+		katalogMitra.Rating = sumRating / float64(len(comments))
 
 		min := 0.0
 		max := 0.0
@@ -577,6 +593,77 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 		}
 	}
 
+	comments, err := s.komentarRepository.GetAllByMitraId(ctx, mitra.ID)
+
+	if err != nil{
+		detailMitra.Ulasan = nil
+	}
+
+	var averageRating float64
+	var commentsResponse formatters.KomentarDetailMitraResponse
+	
+	for _, comment := range comments{
+		var commentResponse formatters.KomentarResponse
+
+		customer, err := s.customerRepository.GetCustomerById(ctx, comment.CustomerId)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		order, err := s.orderRepository.GetById(ctx, comment.OrderId)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
+		var namaLayanan string
+
+		if err != nil{
+			layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
+
+			if err != nil{
+				return detailMitra, err
+			}
+
+			namaLayanan = layananMitra.NamaLayanan
+		}else{
+			namaLayanan = layanan.NamaLayanan
+		}
+
+		user, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+		if err != nil{
+			return detailMitra, err
+		}
+
+		commentResponse.ID = comment.ID
+		commentResponse.FotoCustomer = customer.GambarCustomer
+		commentResponse.Gambar = comment.GambarKomentar
+		commentResponse.Komentar = comment.Komentar
+		commentResponse.Layanan = namaLayanan
+		commentResponse.NamaCustomer = user.NamaLengkap
+		commentResponse.RatingGiven = comment.Rating
+		commentResponse.Tanggal = comment.UpdatedAt
+		commentResponse.TotalSuka = len(comment.Penyuka)
+
+		averageRating = averageRating + comment.Rating
+		
+		commentsResponse.AllKomentar = append(commentsResponse.AllKomentar, commentResponse)
+	}
+
+	commentsResponse.UlasanCount = len(comments)
+	commentsResponse.OverallRating = averageRating / float64(len(comments))
+
+
+
 	detailMitra.ID = mitra.ID
 	detailMitra.NamaPemilik = user.NamaLengkap
 	detailMitra.NamaToko = mitra.NamaToko
@@ -585,6 +672,8 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 	detailMitra.Deskripsi = user.Deskripsi
 	detailMitra.Bidang = bidangArr
 	detailMitra.Layanan = layananArr
+	detailMitra.Ulasan = commentsResponse
+	
 
 	return detailMitra, nil
 
