@@ -13,6 +13,7 @@ type KomentarRepository interface {
 	Save(ctx context.Context, newKomentar models.Komentar) (*mongo.InsertOneResult, error)
 	GetAllByMitraId(ctx context.Context, mitraId primitive.ObjectID) ([]models.Komentar, error)
 	GetById(ctx context.Context, komentarId primitive.ObjectID) (models.Komentar, error)
+	GetByOrderId(ctx context.Context, orderId primitive.ObjectID) (models.Komentar, error)
 	Update(ctx context.Context, komentarId primitive.ObjectID, newKomentar primitive.M) (*mongo.UpdateResult, error)
 	Delete(ctx context.Context, komentarId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
@@ -67,6 +68,17 @@ func (r *komentarRepository) GetAllByMitraId(ctx context.Context, mitraId primit
 func (r *komentarRepository) GetById(ctx context.Context, komentarId primitive.ObjectID) (models.Komentar, error){
 	var komentar models.Komentar
 	err := r.DB.FindOne(ctx, bson.M{"_id": komentarId}).Decode(&komentar)
+
+	if err != nil{
+		return komentar, err
+	}
+
+	return komentar, nil
+}
+
+func (r *komentarRepository) GetByOrderId(ctx context.Context, orderId primitive.ObjectID) (models.Komentar, error){
+	var komentar models.Komentar
+	err := r.DB.FindOne(ctx, bson.M{"order_id": orderId}).Decode(&komentar)
 
 	if err != nil{
 		return komentar, err
