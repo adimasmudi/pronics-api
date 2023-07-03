@@ -40,5 +40,13 @@ func DistanceCalculation(origin string, destination string) (float64, error) {
 		return 0, err
 	}
 
-	return float64(distanceMatrix.Rows[0].Elements[0].Distance.Value) / 1000, nil
+	var jarak float64
+
+	if len(distanceMatrix.Rows) > 0{
+		jarak = float64(distanceMatrix.Rows[0].Elements[0].Distance.Value) / 1000
+	}else{
+		jarak = 0
+	}
+
+	return jarak, nil
 }
