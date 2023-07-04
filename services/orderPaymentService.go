@@ -275,10 +275,12 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		layananData.ID = layananMitraToOrder.ID
 		layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
 		layananData.Harga = layananMitraToOrder.Harga
+		layananData.BidangId = bidangToOrder.ID
 	}else{
 		layananData.ID = layananToOrder.ID
 		layananData.NamaLayanan = layananToOrder.NamaLayanan
 		layananData.Harga = layananToOrder.Harga
+		layananData.BidangId = bidangToOrder.ID
 	}
 
 	orderPaymentToDisplay, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailId)
@@ -436,10 +438,12 @@ func (s *orderPaymentService) ConfirmPayment(ctx context.Context, orderPaymentId
 		layananData.ID = layananMitraToOrder.ID
 		layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
 		layananData.Harga = layananMitraToOrder.Harga
+		layananData.BidangId = bidangToOrder.ID
 	}else{
 		layananData.ID = layananToOrder.ID
 		layananData.NamaLayanan = layananToOrder.NamaLayanan
 		layananData.Harga = layananToOrder.Harga
+		layananData.BidangId = bidangToOrder.ID
 	}
 
 	orderPaymentToDisplay, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)

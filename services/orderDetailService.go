@@ -165,10 +165,12 @@ func (s *orderDetailService) AddOrUpdateOrderDetail(ctx context.Context, orderId
 		layananData.ID = layananMitraToOrder.ID
 		layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
 		layananData.Harga = layananMitraToOrder.Harga
+		layananData.BidangId = bidangToOrder.ID
 	}else{
 		layananData.ID = layananToOrder.ID
 		layananData.NamaLayanan = layananToOrder.NamaLayanan
 		layananData.Harga = layananToOrder.Harga
+		layananData.BidangId = bidangToOrder.ID
 	}
 
 	var orderPayment formatters.OrderPaymentResponse // sementara

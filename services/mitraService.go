@@ -578,6 +578,7 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 			layananForResponse.ID = item.ID
 			layananForResponse.NamaLayanan = item.NamaLayanan
 			layananForResponse.Harga = item.Harga
+			layananForResponse.BidangId = bidangMitra.ID
 
 			layananArr = append(layananArr, layananForResponse)
 		}
@@ -588,6 +589,7 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 			layananForResponse.ID = item.ID
 			layananForResponse.NamaLayanan = item.NamaLayanan
 			layananForResponse.Harga = item.Harga
+			layananForResponse.BidangId = bidangMitra.ID
 
 			layananArr = append(layananArr, layananForResponse)
 		}

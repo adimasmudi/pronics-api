@@ -117,10 +117,12 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 				layananData.ID = layananMitraToOrder.ID
 				layananData.NamaLayanan = layananMitraToOrder.NamaLayanan
 				layananData.Harga = layananMitraToOrder.Harga
+				layananData.BidangId = bidangToOrder.ID
 			}else{
 				layananData.ID = layananToOrder.ID
 				layananData.NamaLayanan = layananToOrder.NamaLayanan
 				layananData.Harga = layananToOrder.Harga
+				layananData.BidangId = bidangToOrder.ID
 			}
 
 			orderPaymentToDisplay, err = s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailToDisplay.ID)
@@ -244,10 +246,12 @@ func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderRespon
 			layananData.ID = layananMitra.ID
 			layananData.NamaLayanan = layananMitra.NamaLayanan
 			layananData.Harga = layananMitra.Harga
+			layananData.BidangId = bidang.ID
 		}else{
 			layananData.ID = layanan.ID
 			layananData.NamaLayanan = layanan.NamaLayanan
 			layananData.Harga = layanan.Harga
+			layananData.BidangId = bidang.ID
 		}
 
 		orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
@@ -349,10 +353,12 @@ func (s *orderService) GetOrderDetail(ctx context.Context, orderId primitive.Obj
 		layananData.ID = layananMitra.ID
 		layananData.NamaLayanan = layananMitra.NamaLayanan
 		layananData.Harga = layananMitra.Harga
+		layananData.BidangId = bidang.ID
 	}else{
 		layananData.ID = layanan.ID
 		layananData.NamaLayanan = layanan.NamaLayanan
 		layananData.Harga = layanan.Harga
+		layananData.BidangId = bidang.ID
 	}
 
 	orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
@@ -499,10 +505,12 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 			layananData.ID = layananMitra.ID
 			layananData.NamaLayanan = layananMitra.NamaLayanan
 			layananData.Harga = layananMitra.Harga
+			layananData.BidangId = bidang.ID
 		}else{
 			layananData.ID = layanan.ID
 			layananData.NamaLayanan = layanan.NamaLayanan
 			layananData.Harga = layanan.Harga
+			layananData.BidangId = bidang.ID
 		}
 
 		orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
