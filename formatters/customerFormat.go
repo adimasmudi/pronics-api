@@ -14,6 +14,14 @@ type CustomerResponse struct{
 	Alamat []AlamatResponse `json:"alamat"`
 }
 
+type CustomerDashboardAdminResponse struct{
+	ID primitive.ObjectID `json:"id"`
+	NamaLengkap string `json:"nama_lengkap"`
+	Email string `json:"email"`
+	NoHandphone string `json:"no_handphone"`
+	JumlahTransaksi int `json:"jumlah_transaksi"`
+}
+
 type CustomerFormatter struct {
 	ID          primitive.ObjectID `json:"id"`
 	Username  string `json:"username"`

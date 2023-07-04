@@ -98,4 +98,21 @@ func (h *customerHandler) UpdateProfil(c *fiber.Ctx) error {
 	return nil
 }
 
+func (h *customerHandler) GetAllCustomer(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	customers, err := h.customerService.GetAllCustomer(ctx)
+
+	if err != nil{
+		response := helper.APIResponse("Can't get all customers", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("get all customers success", http.StatusOK, "success", customers)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
 // get string alamat customer based on latitude and longitude

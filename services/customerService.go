@@ -18,16 +18,18 @@ import (
 type CustomerService interface {
 	GetCustomerProfile(ctx context.Context, ID primitive.ObjectID) (formatters.CustomerResponse, error)
 	UpdateProfileCustomer(ctx context.Context, ID primitive.ObjectID, input inputs.UpdateProfilCustomerInput, fileName string) (*mongo.UpdateResult, error)
+	GetAllCustomer(ctx context.Context) ([]formatters.CustomerDashboardAdminResponse, error)
 }
 
 type customerService struct {
 	userRepository     repositories.UserRepository
 	customerRepository repositories.CustomerRepository
 	alamatCustomerRepository repositories.AlamatCustomerRepository
+	orderRepository repositories.OrderRepository
 }
 
-func NewCustomerService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, alamatCustomerRepository repositories.AlamatCustomerRepository) *customerService{
-	return &customerService{userRepository, customerRepository, alamatCustomerRepository}
+func NewCustomerService(userRepository repositories.UserRepository, customerRepository repositories.CustomerRepository, alamatCustomerRepository repositories.AlamatCustomerRepository, orderRepository repositories.OrderRepository) *customerService{
+	return &customerService{userRepository, customerRepository, alamatCustomerRepository, orderRepository}
 }
 
 func (s *customerService) GetCustomerProfile(ctx context.Context, ID primitive.ObjectID) (formatters.CustomerResponse, error){ 
@@ -120,4 +122,41 @@ func (s *customerService) UpdateProfileCustomer(ctx context.Context, ID primitiv
 	fmt.Println(updatedCustomer)
 
 	return updatedUser, nil
+}
+
+func (s *customerService) GetAllCustomer(ctx context.Context) ([]formatters.CustomerDashboardAdminResponse, error){
+	var allCustomers []formatters.CustomerDashboardAdminResponse
+
+	customers, err := s.customerRepository.GetAllCustomer(ctx)
+
+	if err != nil{
+		return allCustomers, err
+	}
+
+	for _, customer := range customers{
+		var customerResponse formatters.CustomerDashboardAdminResponse
+
+		user, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+		if err != nil{
+			return allCustomers, err
+		}
+
+		customerResponse.ID = customer.ID
+		customerResponse.Email = user.Email
+		customerResponse.NamaLengkap = user.NamaLengkap
+		customerResponse.NoHandphone = user.NoTelepon
+
+		orders, err := s.orderRepository.GetAllOrderCustomer(ctx, customer.ID)
+
+		if err != nil{
+			customerResponse.JumlahTransaksi = 0
+		}else{
+			customerResponse.JumlahTransaksi = len(orders)
+		}
+
+		allCustomers = append(allCustomers, customerResponse)
+	}
+
+	return allCustomers, nil
 }
