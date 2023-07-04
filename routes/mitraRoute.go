@@ -42,4 +42,5 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute.Get("/showKatalog", mitraHandler.ShowKatalogMitra)
 	mitraRoute.Put("/activate/:mitraId", middlewares.Auth, mitraHandler.ActivateMitra)
 	mitraRoute.Get("/detail/:mitraId", mitraHandler.DetailMitra)
+	mitraRoute.Get("/all", middlewares.Auth, mitraHandler.GetAllMitra)
 }

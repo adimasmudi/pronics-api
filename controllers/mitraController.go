@@ -287,3 +287,20 @@ func (h *mitraHandler) DetailMitra(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *mitraHandler) GetAllMitra(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mitras, err := h.mitraService.GetAllMitra(ctx)
+
+	if err != nil{
+		response := helper.APIResponse("Can't get all mitras", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("get all mitras success", http.StatusOK, "success", mitras)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

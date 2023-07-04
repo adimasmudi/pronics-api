@@ -30,6 +30,7 @@ type MitraService interface {
 	ShowKatalogMitra(ctx context.Context, searchFilter map[string] string) ([]formatters.KatalogResponse, error)
 	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
 	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
+	GetAllMitra(ctx context.Context) ([]formatters.MitraDashboardSummaryResponse, error)
 	// get all layanan mitra (layanan and layanan mitra combined )
 }
 
@@ -679,4 +680,43 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 
 	return detailMitra, nil
 
+}
+
+func (s *mitraService) GetAllMitra(ctx context.Context) ([]formatters.MitraDashboardSummaryResponse, error){
+	var mitraResponses []formatters.MitraDashboardSummaryResponse
+
+	mitras, err := s.mitraRepository.GetAllMitra(ctx)
+
+	if err != nil{
+		return mitraResponses, err
+	}
+
+	for _, mitra := range mitras{
+		var mitraResponse formatters.MitraDashboardSummaryResponse
+
+		user, err := s.userRepository.GetUserById(ctx, mitra.UserId)
+
+		if err != nil{
+			return mitraResponses, err
+		}
+
+		orders, err := s.orderRepository.GetAllOrderMitraSelesai(ctx, mitra.ID, constants.OrderCompleted)
+
+		if err != nil{
+			mitraResponse.JumlahTransaksiSelesai = 0
+		}else{
+			mitraResponse.JumlahTransaksiSelesai = len(orders)
+		}
+
+		mitraResponse.ID = mitra.ID
+		mitraResponse.Email = user.Email
+		mitraResponse.NamaPemilik = user.NamaLengkap
+		mitraResponse.NamaToko = mitra.NamaToko
+		mitraResponse.NoHandphone = user.NoTelepon
+		mitraResponse.StatusMitra = mitra.Status
+
+		mitraResponses = append(mitraResponses, mitraResponse)
+	}
+
+	return mitraResponses, nil
 }

@@ -38,3 +38,13 @@ type DetailMitraResponse struct{
 	Layanan []LayananDetailMitraResponse `json:"layanan"`
 	Ulasan interface{} `json:"ulasan"`
 }
+
+type MitraDashboardSummaryResponse struct{
+	ID primitive.ObjectID `json:"id"`
+	NamaToko string `json:"nama_toko"`
+	NamaPemilik string `json:"nama_pemilik"`
+	Email string `json:"email"`
+	NoHandphone string `json:"no_handphone"`
+	JumlahTransaksiSelesai int `json:"jumlah_transaksi_selesai"`
+	StatusMitra string `json:"status_mitra"`
+}

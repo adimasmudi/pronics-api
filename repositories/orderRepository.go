@@ -18,6 +18,7 @@ type OrderRepository interface {
 	GetAllOrderCustomer(ctx context.Context, customerId primitive.ObjectID) ([]models.Order, error)
 	GetAllOrderMitra(ctx context.Context, mitraId primitive.ObjectID) ([]models.Order, error)
 	UpdateOrder(ctx context.Context, ID primitive.ObjectID, newOrder primitive.M)(*mongo.UpdateResult, error)
+	GetAllOrderMitraSelesai(ctx context.Context, mitraId primitive.ObjectID, status string) ([]models.Order, error)
 }
 
 type orderRepository struct{
@@ -163,4 +164,34 @@ func (r *orderRepository) UpdateOrder(ctx context.Context, ID primitive.ObjectID
 	}
 
 	return result, nil
+}
+
+// get all order based on id mitra selesai
+func (r *orderRepository) GetAllOrderMitraSelesai(ctx context.Context, mitraId primitive.ObjectID, status string) ([]models.Order, error){
+	var orders []models.Order
+	
+	currentRes, err := r.DB.Find(ctx, bson.M{"mitra_id":mitraId, "status" : status})
+
+	if err != nil{
+		return nil, err
+	}
+
+	for currentRes.Next(ctx) {
+        // looping to get each data and append to array
+        var order models.Order
+        err := currentRes.Decode(&order)
+        if err != nil {
+            return orders, err
+        }
+
+        orders =append(orders, order)
+    }
+
+	if err := currentRes.Err(); err != nil {
+        return orders, err
+    }
+
+	currentRes.Close(ctx)
+
+	return orders, nil
 }
