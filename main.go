@@ -57,7 +57,7 @@ func main() {
 	api := app.Group("/api/v1")
 	
 	// routes
-	routes.AdminRoute(api, adminCollection)
+	routes.AdminRoute(api, adminCollection, mitraCollection, customerCollection, orderCollection)
 	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection, ktpMitraCollection)
 	routes.CustomerRoute(api, userCollection, customerCollection, alamatCustomerCollection)
 	routes.MitraRoute(api, userCollection, mitraCollection, galeriMitraCollection, wilayahCakupanCollection, bidangCollection, kategoriCollection, layananCollection, layananMitraCollection, komentarCollection, customerCollection, orderCollection, orderDetailCollection)

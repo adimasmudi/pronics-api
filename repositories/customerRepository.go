@@ -15,6 +15,7 @@ type CustomerRepository interface {
 	GetCustomerByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Customer,  error)
 	UpdateProfil(ctx context.Context, ID primitive.ObjectID, newCustomer primitive.M)(*mongo.UpdateResult, error)
 	UpdateAlamatCustomer(ctx context.Context, customerId primitive.ObjectID, newAlamatInCustomer primitive.M) (*mongo.UpdateResult, error)
+	GetAllCustomer(ctx context.Context) ([]models.Customer, error)
 }
 
 type customerRepository struct{
@@ -84,4 +85,33 @@ func (r *customerRepository) UpdateAlamatCustomer(ctx context.Context, customerI
 	}
 
 	return data, nil
+}
+
+func (r *customerRepository) GetAllCustomer(ctx context.Context) ([]models.Customer, error){
+	var customers []models.Customer
+
+	currentRes, err := r.DB.Find(ctx, bson.D{{}})
+
+	if err != nil{
+		return customers, err
+	}
+
+	for currentRes.Next(ctx) {
+        // looping to get each data and append to array
+        var customer models.Customer
+        err := currentRes.Decode(&customer)
+        if err != nil {
+            return customers, err
+        }
+
+        customers =append(customers, customer)
+    }
+
+	if err := currentRes.Err(); err != nil {
+        return customers, err
+    }
+
+	currentRes.Close(ctx)
+
+	return customers, nil
 }

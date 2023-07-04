@@ -16,6 +16,7 @@ type MitraRepository interface {
 	GetMitraByIdUser(ctx context.Context, IdUser primitive.ObjectID) (models.Mitra,  error)
 	UpdateProfil(ctx context.Context, ID primitive.ObjectID, newMitra primitive.M)(*mongo.UpdateResult, error)
 	FindAllActiveMitra(ctx context.Context) ([]models.Mitra, error)
+	GetAllMitra(ctx context.Context) ([]models.Mitra, error)
 }
 
 type mitraRepository struct{
@@ -100,5 +101,34 @@ func (r *mitraRepository) FindAllActiveMitra(ctx context.Context) ([]models.Mitr
 	currentRes.Close(ctx)
 
 	return katalogMitras, nil
+}
+
+func (r *mitraRepository) GetAllMitra(ctx context.Context) ([]models.Mitra, error){
+	var mitras []models.Mitra
+
+	currentRes, err := r.DB.Find(ctx, bson.D{{}})
+
+	if err != nil{
+		return mitras, err
+	}
+
+	for currentRes.Next(ctx) {
+        // looping to get each data and append to array
+        var mitra models.Mitra
+        err := currentRes.Decode(&mitra)
+        if err != nil {
+            return mitras, err
+        }
+
+        mitras =append(mitras, mitra)
+    }
+
+	if err := currentRes.Err(); err != nil {
+        return mitras, err
+    }
+
+	currentRes.Close(ctx)
+
+	return mitras, nil
 }
 

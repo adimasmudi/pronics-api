@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"pronics-api/formatters"
 	"pronics-api/helper"
 	"pronics-api/inputs"
 	"pronics-api/models"
@@ -18,14 +19,18 @@ type AdminService interface {
 	Register(ctx context.Context, input inputs.RegisterAdminInput) (*mongo.InsertOneResult, error)
 	Login(ctx context.Context, input inputs.LoginAdminInput) (models.Admin, string, error)
 	GetAdminProfile(ctx context.Context, ID primitive.ObjectID) (models.Admin, error)
+	GetDashboardSummary(ctx context.Context, ID primitive.ObjectID) (formatters.DashboardSummaryAdmin, error)
 }
 
 type adminService struct{
 	adminRepository repositories.AdminRepository
+	mitraRepository repositories.MitraRepository
+	customerRepository repositories.CustomerRepository
+	orderRepository repositories.OrderRepository
 }
 
-func NewAdminService(adminRepository repositories.AdminRepository) *adminService{
-	return &adminService{adminRepository}
+func NewAdminService(adminRepository repositories.AdminRepository, mitraRepository repositories.MitraRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository) *adminService{
+	return &adminService{adminRepository, mitraRepository, customerRepository, orderRepository}
 }
 
 func (s *adminService) Register(ctx context.Context, input inputs.RegisterAdminInput) (*mongo.InsertOneResult, error){
@@ -93,4 +98,38 @@ func (s *adminService) GetAdminProfile(ctx context.Context, ID primitive.ObjectI
 	}
 
 	return admin, nil
+}
+
+func (s *adminService) GetDashboardSummary(ctx context.Context, ID primitive.ObjectID) (formatters.DashboardSummaryAdmin, error){
+	var dashboardSummary formatters.DashboardSummaryAdmin
+
+	_, err := s.adminRepository.GetAdminById(ctx, ID)
+
+	if err != nil{
+		return dashboardSummary, err
+	}
+
+	customer, err := s.customerRepository.GetAllCustomer(ctx)
+
+	if err != nil{
+		return dashboardSummary, errors.New("customer not found")
+	}
+
+	mitra, err := s.mitraRepository.GetAllMitra(ctx)
+
+	if err != nil{
+		return dashboardSummary, errors.New("mitra not found")
+	}
+
+	order, err := s.orderRepository.GetAllOrder(ctx)
+
+	if err != nil{
+		return dashboardSummary, errors.New("order not found")
+	}
+
+	dashboardSummary.TotalCustomer = len(customer)
+	dashboardSummary.TotalMitra = len(mitra)
+	dashboardSummary.TotalTransaksi = len(order)
+
+	return dashboardSummary, nil
 }
