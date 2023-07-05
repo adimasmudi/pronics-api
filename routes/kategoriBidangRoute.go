@@ -26,4 +26,5 @@ func KategoriRoute(api fiber.Router, kategoriCollection *mongo.Collection, bidan
 	kategori.Post("/save", middlewares.Auth, kategoriHandler.Save)
 	kategori.Get("/all", kategoriHandler.FindAll)
 	kategori.Get("/all/bidang", kategoriHandler.GetKategoriWithBidang)
+	kategori.Get("/:kategoriId", kategoriHandler.GetKategoriById)
 }

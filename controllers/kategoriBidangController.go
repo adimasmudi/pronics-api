@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type kategoriHandler struct {
@@ -77,6 +78,26 @@ func (h *kategoriHandler) GetKategoriWithBidang(c *fiber.Ctx) error {
 	}
 
 	response := helper.APIResponse("Get all category success", http.StatusOK, "success", allKategoriWithBidang)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+// get kategori by id
+func (h *kategoriHandler) GetKategoriById(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	kategoriId, _ := primitive.ObjectIDFromHex(c.Params("kategoriId"))
+
+	kategori, err := h.kategoriService.GetKategoriById(ctx, kategoriId)
+
+	if err != nil{
+		response := helper.APIResponse("Failed to get category", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Get category success", http.StatusOK, "success", kategori)
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }

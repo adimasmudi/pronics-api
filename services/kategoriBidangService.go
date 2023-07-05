@@ -16,6 +16,7 @@ type KategoriBidangService interface {
 	Save(ctx context.Context, input inputs.AddKategoriInput) (*mongo.InsertOneResult, error)
 	FindAll(ctx context.Context) ([]models.Kategori, error)
 	GetKategoriWithBidang(ctx context.Context) ([]formatters.KategoriWithBidangResponse, error)
+	GetKategoriById(ctx context.Context, kategoriId primitive.ObjectID) (models.Kategori, error)
 }
 
 type kategoriBidangService struct{
@@ -91,4 +92,14 @@ func (s *kategoriBidangService) GetKategoriWithBidang(ctx context.Context) ([]fo
 	}
 
 	return kategoriResponses, nil
+}
+
+func (s *kategoriBidangService) GetKategoriById(ctx context.Context, kategoriId primitive.ObjectID) (models.Kategori, error){
+	kategori, err := s.kategoriBidangRepository.GetById(ctx, kategoriId)
+
+	if err != nil{
+		return kategori, err
+	}
+
+	return kategori, nil
 }
