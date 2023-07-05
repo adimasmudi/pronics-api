@@ -33,4 +33,5 @@ func KomentarRoute(api fiber.Router, userCollection *mongo.Collection, mitraColl
 	komentar.Get("/see/:orderId", middlewares.Auth, komentarHandler.KomentarDetail)
 	komentar.Patch("/update/:komentarId", middlewares.Auth, komentarHandler.UpdateKomentar)
 	komentar.Patch("/response/:komentarId", middlewares.Auth, komentarHandler.ResponseKomentar)
+	komentar.Delete("/delete/:komentarId", middlewares.Auth, komentarHandler.DeleteKomentar)
 }

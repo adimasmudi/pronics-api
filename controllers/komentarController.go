@@ -185,3 +185,23 @@ func (h *komentarHandler) ResponseKomentar(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+// delete bidang
+func (h *komentarHandler) DeleteKomentar(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	komentarId,_ := primitive.ObjectIDFromHex(c.Params("komentarId"))
+
+	deletedKomentar, err := h.komentarService.DeleteKomentar(ctx, komentarId)
+
+	if err != nil{
+		response := helper.APIResponse("Delete komentar failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("Delete komentar success", http.StatusOK, "success", deletedKomentar)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

@@ -22,7 +22,7 @@ type KomentarService interface {
 	SeeKomentar(ctx context.Context, orderId primitive.ObjectID) (formatters.KomentarResponse, error)
 	UpdateKomentar(ctx context.Context,userId primitive.ObjectID, komentarId primitive.ObjectID, input inputs.KomentarInput, fileNames []string) (*mongo.UpdateResult, error)
 	ResponseKomentar(ctx context.Context, userId primitive.ObjectID, komentarId primitive.ObjectID, tipe string) (*mongo.UpdateResult, error)
-	// DeleteKomentar(ctx context.Context, komentarId primitive.ObjectID) (*mongo.DeleteResult, error)
+	DeleteKomentar(ctx context.Context, komentarId primitive.ObjectID) (*mongo.DeleteResult, error)
 }
 
 type komentarService struct{
@@ -278,3 +278,19 @@ func (s *komentarService) ResponseKomentar(ctx context.Context, userId primitive
 }
 
 // delete komentar
+func (s *komentarService) DeleteKomentar(ctx context.Context, komentarId primitive.ObjectID) (*mongo.DeleteResult, error){
+	_, err := s.komentarRepository.GetById(ctx, komentarId)
+
+	if err != nil{
+		return nil, err
+	}
+
+
+	deletedKomentar, err := s.komentarRepository.Delete(ctx, komentarId)
+
+	if err != nil{
+		return nil, err
+	}
+
+	return deletedKomentar, nil
+}
