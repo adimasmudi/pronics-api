@@ -59,7 +59,7 @@ func main() {
 	// routes
 	routes.AdminRoute(api, adminCollection, mitraCollection, customerCollection, orderCollection)
 	routes.UserRoute(api, userCollection, customerCollection, mitraCollection, rekeningCollection, ktpMitraCollection)
-	routes.CustomerRoute(api, userCollection, customerCollection, alamatCustomerCollection, orderCollection)
+	routes.CustomerRoute(api, userCollection, customerCollection, alamatCustomerCollection, orderCollection,adminCollection)
 	routes.MitraRoute(api, userCollection, mitraCollection, galeriMitraCollection, wilayahCakupanCollection, bidangCollection, kategoriCollection, layananCollection, layananMitraCollection, komentarCollection, customerCollection, orderCollection, orderDetailCollection,adminCollection)
 	routes.KategoriRoute(api, kategoriCollection, bidangCollection, adminCollection)
 	routes.WilayahCakupanRoute(api, wilayahCakupanCollection, adminCollection)
