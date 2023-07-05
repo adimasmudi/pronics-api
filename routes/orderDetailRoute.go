@@ -28,7 +28,10 @@ func OrderDetailRoute(api fiber.Router,userCollection *mongo.Collection, mitraCo
 	// controllers
 	orderDetailHandler := controllers.NewOrderDetailHandler(orderDetailService)
 
+	// auth
+	customer := middlewares.CustomerAuth(customerRepository)
+
 	orderDetail := api.Group("/orderDetail")
 
-	orderDetail.Post("/createOrUpdate/:orderId", middlewares.Auth, orderDetailHandler.AddOrUpdateOrderDetail)
+	orderDetail.Post("/createOrUpdate/:orderId", customer.AuthCustomer, orderDetailHandler.AddOrUpdateOrderDetail)
 }

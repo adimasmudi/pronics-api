@@ -10,11 +10,12 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection){
+func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, adminCollection *mongo.Collection){
 	// repositories
 	bidangRepository := repositories.NewBidangRepository(bidangCollection)
 	kategoriRepository := repositories.NewKategoriRepository(kategoriCollection)
 	layananRepository := repositories.NewLayananRepository(layananCollection)
+	adminRepository := repositories.NewAdminRepository(adminCollection)
 
 	// services
 	bidangService := services.NewbidangService(bidangRepository, kategoriRepository, layananRepository)
@@ -22,11 +23,14 @@ func BidangRoute(api fiber.Router, bidangCollection *mongo.Collection, kategoriC
 	// controllers
 	bidangHandler := controllers.NewbidangHandler(bidangService)
 
+	// auth
+	adminAuth := middlewares.AdminAuth(adminRepository)
+
 	bidang := api.Group("/bidang")
 
-	bidang.Post("/save", middlewares.Auth, bidangHandler.Save)
+	bidang.Post("/save", adminAuth.AuthAdmin, bidangHandler.Save)
 	bidang.Get("/all", bidangHandler.FindAll)
 	bidang.Get("/detail/:bidangId", bidangHandler.FindById)
-	bidang.Put("/update/:bidangId", middlewares.Auth, bidangHandler.UpdateBidang)
-	bidang.Delete("/delete/:bidangId", middlewares.Auth, bidangHandler.DeleteBidang)
+	bidang.Put("/update/:bidangId", adminAuth.AuthAdmin, bidangHandler.UpdateBidang)
+	bidang.Delete("/delete/:bidangId", adminAuth.AuthAdmin, bidangHandler.DeleteBidang)
 }

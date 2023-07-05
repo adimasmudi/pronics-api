@@ -28,9 +28,12 @@ func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerColl
 	// controllers
 	savedHandler := controllers.NewSavedHandler(savedService)
 
+	// auth
+	customer := middlewares.CustomerAuth(customerRepository)
+
 	savedRoute := api.Group("/saved")
 
-	savedRoute.Post("/add/:mitraId", middlewares.Auth, savedHandler.Save)
-	savedRoute.Delete("/delete/:savedId", middlewares.Auth, savedHandler.DeleteSaved)
-	savedRoute.Get("/all", middlewares.Auth, savedHandler.ShowAllSaved)
+	savedRoute.Post("/add/:mitraId", customer.AuthCustomer, savedHandler.Save)
+	savedRoute.Delete("/delete/:savedId", customer.AuthCustomer, savedHandler.DeleteSaved)
+	savedRoute.Get("/all", customer.AuthCustomer, savedHandler.ShowAllSaved)
 }

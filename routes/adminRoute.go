@@ -23,10 +23,13 @@ func AdminRoute(api fiber.Router, adminCollection *mongo.Collection, mitraCollec
 	// controllers
 	adminHandler := controllers.NewAdminHandler(adminService)
 
+	// auth
+	adminAuth := middlewares.AdminAuth(adminRepository)
+
 	authAdmin := api.Group("/auth/admin")
 
 	authAdmin.Post("/register", adminHandler.Register)
 	authAdmin.Post("/login", adminHandler.Login)
-	authAdmin.Get("/profile", middlewares.Auth,adminHandler.GetProfile)
-	authAdmin.Get("/dashboardSummary", middlewares.Auth, adminHandler.GetDashboardSummary)
+	authAdmin.Get("/profile", adminAuth.AuthAdmin,adminHandler.GetProfile)
+	authAdmin.Get("/dashboardSummary", adminAuth.AuthAdmin, adminHandler.GetDashboardSummary)
 }

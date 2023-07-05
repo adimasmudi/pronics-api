@@ -2,7 +2,6 @@ package middlewares
 
 import (
 	"errors"
-	"net/http"
 	"pronics-api/helper"
 	"strings"
 
@@ -10,21 +9,17 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
-func Auth(c *fiber.Ctx)error{
+func Auth(c *fiber.Ctx)(string,error){
 	
 	authorizationHeader := c.Get("Authorization")
 	
 	if !strings.Contains(authorizationHeader, "Bearer"){
-		response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", errors.New("you have to use bearer"))
-		c.Status(http.StatusUnauthorized).JSON(response)
-		return nil
+		return "",errors.New("you have to use bearer")
 	}
 
 	tokenArray := strings.Split(authorizationHeader," ")
 	if len(tokenArray) < 2{
-		response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", errors.New("can't Find token"))
-		c.Status(http.StatusUnauthorized).JSON(response)
-		return nil
+		return "",errors.New("can't Find token")
 	}
 
 	tokenString := tokenArray[1]
@@ -32,22 +27,16 @@ func Auth(c *fiber.Ctx)error{
 	token, err := helper.ValidateToken(tokenString)
 
 	if err != nil{
-		response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", errors.New("token is not valid"))
-		c.Status(http.StatusUnauthorized).JSON(response)
-		return err
+		return "",errors.New("token is not valid")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 
 	if !ok || !token.Valid{
-		response := helper.APIResponse("Unauthorized", http.StatusUnauthorized, "error", errors.New("token is not valid"))
-		c.Status(http.StatusUnauthorized).JSON(response)
-		return nil
+		return "",errors.New("token is not valid")
 	}
 
 	id := claims["ID"]
 	
-	c.Locals("currentUserID",id)
-
-	return c.Next()
+	return id.(string), nil
 }

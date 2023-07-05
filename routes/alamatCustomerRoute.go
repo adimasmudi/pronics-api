@@ -22,9 +22,12 @@ func AlamatCustomerRoute(api fiber.Router, alamatCustomerCollection *mongo.Colle
 	// controllers
 	alamatCustomerHandler := controllers.NewAlamatCustomerHandler(alamatCustomerService)
 
+	// auth
+	customer := middlewares.CustomerAuth(customerRepository)
+
 	alamat := api.Group("/alamat")
 
-	alamat.Post("/save", middlewares.Auth, alamatCustomerHandler.Save)
-	alamat.Get("/all", middlewares.Auth, alamatCustomerHandler.GetAllAlamatCustomer)
-	alamat.Put("/setAsUtama/:alamatId", middlewares.Auth, alamatCustomerHandler.SetAsAlamatUtama)
+	alamat.Post("/save", customer.AuthCustomer, alamatCustomerHandler.Save)
+	alamat.Get("/all", customer.AuthCustomer, alamatCustomerHandler.GetAllAlamatCustomer)
+	alamat.Put("/setAsUtama/:alamatId", customer.AuthCustomer, alamatCustomerHandler.SetAsAlamatUtama)
 }

@@ -23,9 +23,12 @@ func CustomerRoute(api fiber.Router, userCollection *mongo.Collection, customerC
 	// controllers
 	customerHandler := controllers.NewCustomerHandler(customerService)
 
+	// auth
+	customer := middlewares.CustomerAuth(customerRepository)
+
 	authCustomer := api.Group("/customer")
 
-	authCustomer.Get("/profile", middlewares.Auth, customerHandler.GetProfile)
-	authCustomer.Put("/profile/update", middlewares.Auth, customerHandler.UpdateProfil)
-	authCustomer.Get("/all", middlewares.Auth, customerHandler.GetAllCustomer)
+	authCustomer.Get("/profile", customer.AuthCustomer, customerHandler.GetProfile)
+	authCustomer.Put("/profile/update", customer.AuthCustomer, customerHandler.UpdateProfil)
+	authCustomer.Get("/all", customer.AuthCustomer, customerHandler.GetAllCustomer)
 }

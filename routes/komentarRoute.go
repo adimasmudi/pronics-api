@@ -27,11 +27,15 @@ func KomentarRoute(api fiber.Router, userCollection *mongo.Collection, mitraColl
 	// controllers
 	komentarHandler := controllers.NewKomentarHandler(komentarService)
 
+	// auth
+	customer := middlewares.CustomerAuth(customerRepository)
+	authAll := middlewares.AuthAll()
+
 	komentar := api.Group("/komentar")
 
-	komentar.Post("/add/:orderId", middlewares.Auth, komentarHandler.AddKomentar)
-	komentar.Get("/see/:orderId", middlewares.Auth, komentarHandler.KomentarDetail)
-	komentar.Patch("/update/:komentarId", middlewares.Auth, komentarHandler.UpdateKomentar)
-	komentar.Patch("/response/:komentarId", middlewares.Auth, komentarHandler.ResponseKomentar)
-	komentar.Delete("/delete/:komentarId", middlewares.Auth, komentarHandler.DeleteKomentar)
+	komentar.Post("/add/:orderId", customer.AuthCustomer, komentarHandler.AddKomentar)
+	komentar.Get("/see/:orderId", authAll.AuthAll, komentarHandler.KomentarDetail)
+	komentar.Patch("/update/:komentarId", customer.AuthCustomer, komentarHandler.UpdateKomentar)
+	komentar.Patch("/response/:komentarId", customer.AuthCustomer, komentarHandler.ResponseKomentar)
+	komentar.Delete("/delete/:komentarId", customer.AuthCustomer, komentarHandler.DeleteKomentar)
 }

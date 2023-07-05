@@ -11,7 +11,7 @@ func InitMap() *maps.Client {
 	c, err := maps.NewClient(maps.WithAPIKey(os.Getenv("MAPS_API_KEY")))
 
 	if err != nil {
-		log.Fatalf("fatal error: %s", err)
+		log.Fatalf("fatal error : %s", err)
 	}
 
 	return c

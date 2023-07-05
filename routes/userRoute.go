@@ -29,6 +29,9 @@ func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerColle
 	// controllers
 	userHandler := controllers.NewUserHandler(userService)
 
+	// auth
+	allAuth := middlewares.AuthAll()
+
 	authUser := api.Group("/auth/user")
 
 	// login and register
@@ -46,6 +49,6 @@ func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerColle
 	})
 
 	authUser.Get("/callback",userHandler.Callback)
-	authUser.Put("/changePassword", middlewares.Auth, userHandler.ChangePassword)
+	authUser.Put("/changePassword", allAuth.AuthAll, userHandler.ChangePassword)
 
 }

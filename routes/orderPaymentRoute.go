@@ -30,8 +30,11 @@ func OrderPaymentRoute(api fiber.Router,userCollection *mongo.Collection, mitraC
 	// controllers
 	orderPaymentHandler := controllers.NewOrderPaymentHandler(orderPaymentService)
 
+	// auth
+	customer := middlewares.CustomerAuth(customerRepository)
+
 	orderPayment := api.Group("/orderPayment")
 
-	orderPayment.Post("/createOrUpdate/:orderDetailId", middlewares.Auth, orderPaymentHandler.AddOrUpdateOrderPayment)
-	orderPayment.Post("/confirmPayment/:orderPaymentId", middlewares.Auth, orderPaymentHandler.ConfirmPayment)
+	orderPayment.Post("/createOrUpdate/:orderDetailId", customer.AuthCustomer, orderPaymentHandler.AddOrUpdateOrderPayment)
+	orderPayment.Post("/confirmPayment/:orderPaymentId", customer.AuthCustomer, orderPaymentHandler.ConfirmPayment)
 }

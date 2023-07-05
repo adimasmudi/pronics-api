@@ -22,8 +22,11 @@ func LayananMitraRoute(api fiber.Router, layananMitraCollection *mongo.Collectio
 	// controllers
 	layananMitraHandler := controllers.NewLayananMitraHandler(layananMitraService)
 
+	// auth
+	mitra := middlewares.MitraAuth(mitraRepository)
+
 	layananMitra := api.Group("/layananMitra")
 
-	layananMitra.Post("/save", middlewares.Auth, layananMitraHandler.Save)
-	layananMitra.Delete("/delete/:layananMitraId", middlewares.Auth, layananMitraHandler.Delete)
+	layananMitra.Post("/save", mitra.AuthMitra, layananMitraHandler.Save)
+	layananMitra.Delete("/delete/:layananMitraId", mitra.AuthMitra, layananMitraHandler.Delete)
 }
