@@ -304,3 +304,22 @@ func (h *mitraHandler) GetAllMitra(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *mitraHandler) GetDashboardSummary(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	dashboardSummary, err := h.mitraService.GetDashboardSummary(ctx, currentUserId)
+
+	if err != nil{
+		response := helper.APIResponse("Can't get dashboardSummary", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("get dashboard summary success", http.StatusOK, "success",dashboardSummary )
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}

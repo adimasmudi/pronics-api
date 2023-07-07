@@ -31,6 +31,7 @@ type MitraService interface {
 	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
 	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
 	GetAllMitra(ctx context.Context) ([]formatters.MitraDashboardSummaryResponse, error)
+	GetDashboardSummary(ctx context.Context, userId primitive.ObjectID) (formatters.DashboardSummaryMitra, error)
 	// get all layanan mitra (layanan and layanan mitra combined )
 }
 
@@ -47,10 +48,11 @@ type mitraService struct {
 	customerRepository repositories.CustomerRepository
 	orderRepository repositories.OrderRepository
 	orderDetailRepository repositories.OrderDetailRepository
+	orderPaymentRepository repositories.OrderPaymentRepository
 }
 
-func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository) *mitraService{
-	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository}
+func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository) *mitraService{
+	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository}
 }
 
 func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error){
@@ -719,4 +721,49 @@ func (s *mitraService) GetAllMitra(ctx context.Context) ([]formatters.MitraDashb
 	}
 
 	return mitraResponses, nil
+}
+
+func (s *mitraService) GetDashboardSummary(ctx context.Context, userId primitive.ObjectID) (formatters.DashboardSummaryMitra, error){
+	var dashboardSummaryMira formatters.DashboardSummaryMitra
+
+	mitra, err := s.mitraRepository.GetMitraByIdUser(ctx, userId)
+
+	if err != nil{
+		return dashboardSummaryMira, errors.New("mitra not found")
+	}
+
+	orders, err := s.orderRepository.GetAllOrderMitraSelesai(ctx, mitra.ID, constants.OrderCompleted)
+
+	var totalOrderSelesai int
+	var totalPendapatanBersih float64
+	
+	if err != nil{
+		totalOrderSelesai = 0
+		totalPendapatanBersih = 0.0
+	}else{
+		for _, order := range orders{
+			orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+			if err != nil{
+				return dashboardSummaryMira, err
+			}
+
+			orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetail.ID)
+
+			if err != nil{
+				return dashboardSummaryMira, err
+			}
+
+			totalOrderSelesai += 1
+
+			pendapatanBersih := orderPayment.TotalBiaya - orderPayment.BiayaAplikasi
+
+			totalPendapatanBersih += pendapatanBersih
+		}
+	}
+
+	dashboardSummaryMira.TotalOrderSelesai = totalOrderSelesai
+	dashboardSummaryMira.TotalPendapatanBersih = totalPendapatanBersih
+
+	return dashboardSummaryMira, nil
 }

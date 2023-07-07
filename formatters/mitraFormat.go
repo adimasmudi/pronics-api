@@ -48,3 +48,8 @@ type MitraDashboardSummaryResponse struct{
 	JumlahTransaksiSelesai int `json:"jumlah_transaksi_selesai"`
 	StatusMitra string `json:"status_mitra"`
 }
+
+type DashboardSummaryMitra struct{
+	TotalOrderSelesai int `json:"total_order_selesai"`
+	TotalPendapatanBersih float64 `json:"total_pendapatan_bersih"`
+}
