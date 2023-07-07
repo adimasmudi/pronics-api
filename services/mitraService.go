@@ -388,12 +388,15 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 			katalogMitra.Rating = 0
 		}
 
-		var sumRating float64
-		for _, comment := range comments{
-			sumRating += comment.Rating
+		if len(comments) < 1{
+			katalogMitra.Rating = 0
+		}else{
+			var sumRating float64
+			for _, comment := range comments{
+				sumRating += comment.Rating
+			}
+			katalogMitra.Rating = sumRating / float64(len(comments))
 		}
-
-		katalogMitra.Rating = sumRating / float64(len(comments))
 
 		min := 0.0
 		max := 0.0

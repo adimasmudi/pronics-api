@@ -33,10 +33,11 @@ type savedService struct{
 	layananRepository repositories.LayananRepository
 	layananMitraRepository repositories.LayananMitraRepository
 	savedRepository repositories.SavedRepository
+	komentarRepository repositories.KomentarRepository
 }
 
-func NewSavedService(userRepository repositories.UserRepository,customerRepository repositories.CustomerRepository, mitraRepository repositories.MitraRepository,wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, savedRepository repositories.SavedRepository) *savedService{
-	return &savedService{userRepository, customerRepository,mitraRepository,wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, savedRepository}
+func NewSavedService(userRepository repositories.UserRepository,customerRepository repositories.CustomerRepository, mitraRepository repositories.MitraRepository,wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, savedRepository repositories.SavedRepository, komentarRepository repositories.KomentarRepository) *savedService{
+	return &savedService{userRepository, customerRepository,mitraRepository,wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, savedRepository, komentarRepository}
 }
 
 func (s *savedService) Save(ctx context.Context, userId primitive.ObjectID, mitraId primitive.ObjectID) (*mongo.InsertOneResult, error){
@@ -137,7 +138,22 @@ func (s *savedService) ShowAll(ctx context.Context, userId primitive.ObjectID, s
 
 		katalogMitra.ID = mitra.ID
 		katalogMitra.Gambar = mitra.GambarMitra
-		katalogMitra.Rating = 5 // sementara
+		
+		comments, err := s.komentarRepository.GetAllByMitraId(ctx, mitra.ID)
+
+		if err != nil {
+			katalogMitra.Rating = 0
+		}
+
+		if len(comments) < 1{
+			katalogMitra.Rating = 0
+		}else{
+			var sumRating float64
+			for _, comment := range comments{
+				sumRating += comment.Rating
+			}
+			katalogMitra.Rating = sumRating / float64(len(comments))
+		}
 
 		min := 0.0
 		max := 0.0

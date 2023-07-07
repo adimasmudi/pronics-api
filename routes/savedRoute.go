@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection,wilayahCakupanCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection, savedCollection *mongo.Collection) {
+func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerCollection *mongo.Collection, mitraCollection *mongo.Collection,wilayahCakupanCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection, savedCollection *mongo.Collection, komentarCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
 	customerRepository := repositories.NewCustomerRepository(customerCollection)
@@ -21,9 +21,10 @@ func SavedRoute(api fiber.Router, userCollection *mongo.Collection, customerColl
 	layananRepository := repositories.NewLayananRepository(layananCollection)
 	layananMitraRepository := repositories.NewLayananMitraRepository(layananMitraCollection)
 	savedRepository := repositories.NewSavedRepository(savedCollection)
+	komentarRepository := repositories.NewKomentarRepository(komentarCollection)
 
 	// services
-	savedService := services.NewSavedService(userRepository, customerRepository, mitraRepository,wilayahCakupanRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, savedRepository)
+	savedService := services.NewSavedService(userRepository, customerRepository, mitraRepository,wilayahCakupanRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, savedRepository, komentarRepository)
 
 	// controllers
 	savedHandler := controllers.NewSavedHandler(savedService)
