@@ -39,6 +39,11 @@ type DetailMitraResponse struct{
 	Ulasan interface{} `json:"ulasan"`
 }
 
+type DetailMitraByAdminResponse struct{
+	DetailMitra DetailMitraResponse `json:"detail_mitra"`
+	KTP string `json:"ktp_mitra"`
+}
+
 type MitraDashboardSummaryResponse struct{
 	ID primitive.ObjectID `json:"id"`
 	NamaToko string `json:"nama_toko"`

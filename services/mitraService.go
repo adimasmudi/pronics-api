@@ -33,7 +33,7 @@ type MitraService interface {
 	GetAllMitra(ctx context.Context) ([]formatters.MitraDashboardSummaryResponse, error)
 	GetDashboardSummary(ctx context.Context, userId primitive.ObjectID) (formatters.DashboardSummaryMitra, error)
 	GetAllLayananOwnedByMitra(ctx context.Context, mitraId primitive.ObjectID)([]formatters.LayananDetailMitraResponse, error)
-	
+	GetDetailMitraByAdmin(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraByAdminResponse, error)
 }
 
 type mitraService struct {
@@ -50,10 +50,11 @@ type mitraService struct {
 	orderRepository repositories.OrderRepository
 	orderDetailRepository repositories.OrderDetailRepository
 	orderPaymentRepository repositories.OrderPaymentRepository
+	ktpMitraRepository repositories.KTPMitraRepository
 }
 
-func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository) *mitraService{
-	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository}
+func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository, ktpMitraRepository repositories.KTPMitraRepository) *mitraService{
+	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository, ktpMitraRepository}
 }
 
 func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error){
@@ -817,4 +818,173 @@ func (s *mitraService) GetAllLayananOwnedByMitra(ctx context.Context, mitraId pr
 	}
 
 	return layanansOwnedByMitra, nil
+}
+
+func (s *mitraService) GetDetailMitraByAdmin(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraByAdminResponse, error){
+	var detailMitraByAdmin formatters.DetailMitraByAdminResponse
+	var detailMitra formatters.DetailMitraResponse
+
+	mitra, err := s.mitraRepository.GetMitraById(ctx, mitraId)
+
+	if err != nil{
+		return detailMitraByAdmin, err
+	}
+
+	user, err := s.userRepository.GetUserById(ctx,mitra.UserId)
+
+	if err != nil{
+		return detailMitraByAdmin, err
+	}
+
+	galeriImage, err := s.galeriMitraRepository.GetAllByIdMitra(ctx, mitra.ID)
+
+	if err != nil{
+		return detailMitraByAdmin, err
+	}
+
+	var galeriMitra []string
+
+	for _, galeri := range galeriImage{
+		galeriMitra = append(galeriMitra, galeri.Gambar)
+	}
+
+	var bidangArr []string
+	var layananArr []formatters.LayananDetailMitraResponse
+
+	for _, bidangId := range mitra.Bidang{
+		bidangMitra, err := s.bidangRepository.GetById(ctx, bidangId)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		bidangArr = append(bidangArr, bidangMitra.NamaBidang)
+
+		layanan, err := s.layananRepository.FindAllByBidangId(ctx, bidangMitra.ID)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		layananMitra, err := s.layananMitraRepository.FindAllByBidangAndMitra(ctx, bidangMitra.ID, mitra.ID)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		for _, item := range layanan{
+			var layananForResponse formatters.LayananDetailMitraResponse
+
+			layananForResponse.ID = item.ID
+			layananForResponse.NamaLayanan = item.NamaLayanan
+			layananForResponse.Harga = item.Harga
+			layananForResponse.BidangId = bidangMitra.ID
+
+			layananArr = append(layananArr, layananForResponse)
+		}
+
+		for _, item := range layananMitra{
+			var layananForResponse formatters.LayananDetailMitraResponse
+
+			layananForResponse.ID = item.ID
+			layananForResponse.NamaLayanan = item.NamaLayanan
+			layananForResponse.Harga = item.Harga
+			layananForResponse.BidangId = bidangMitra.ID
+
+			layananArr = append(layananArr, layananForResponse)
+		}
+	}
+
+	comments, err := s.komentarRepository.GetAllByMitraId(ctx, mitra.ID)
+
+	if err != nil{
+		detailMitra.Ulasan = nil
+	}
+
+	var averageRating float64
+	var commentsResponse formatters.KomentarDetailMitraResponse
+	
+	for _, comment := range comments{
+		var commentResponse formatters.KomentarResponse
+
+		customer, err := s.customerRepository.GetCustomerById(ctx, comment.CustomerId)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		order, err := s.orderRepository.GetById(ctx, comment.OrderId)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		orderDetail, err := s.orderDetailRepository.GetByOrderId(ctx, order.ID)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		layanan, err := s.layananRepository.GetById(ctx, orderDetail.LayananId)
+		var namaLayanan string
+
+		if err != nil{
+			layananMitra, err := s.layananMitraRepository.GetById(ctx, orderDetail.LayananId)
+
+			if err != nil{
+				return detailMitraByAdmin, err
+			}
+
+			namaLayanan = layananMitra.NamaLayanan
+		}else{
+			namaLayanan = layanan.NamaLayanan
+		}
+
+		user, err := s.userRepository.GetUserById(ctx, customer.UserId)
+
+		if err != nil{
+			return detailMitraByAdmin, err
+		}
+
+		commentResponse.ID = comment.ID
+		commentResponse.FotoCustomer = customer.GambarCustomer
+		commentResponse.Gambar = comment.GambarKomentar
+		commentResponse.Komentar = comment.Komentar
+		commentResponse.Layanan = namaLayanan
+		commentResponse.NamaCustomer = user.NamaLengkap
+		commentResponse.RatingGiven = comment.Rating
+		commentResponse.Tanggal = comment.UpdatedAt
+		commentResponse.TotalSuka = len(comment.Penyuka)
+
+		averageRating = averageRating + comment.Rating
+		
+		commentsResponse.AllKomentar = append(commentsResponse.AllKomentar, commentResponse)
+	}
+
+	commentsResponse.UlasanCount = len(comments)
+	commentsResponse.OverallRating = averageRating / float64(len(comments))
+
+
+
+	detailMitra.ID = mitra.ID
+	detailMitra.NamaPemilik = user.NamaLengkap
+	detailMitra.NamaToko = mitra.NamaToko
+	detailMitra.GaleriImage = galeriMitra
+	detailMitra.FotoProfil = mitra.GambarMitra
+	detailMitra.Deskripsi = user.Deskripsi
+	detailMitra.Bidang = bidangArr
+	detailMitra.Layanan = layananArr
+	detailMitra.Ulasan = commentsResponse
+
+	detailMitraByAdmin.DetailMitra = detailMitra
+
+	ktp, err := s.ktpMitraRepository.GetByMitraId(ctx, mitraId)
+
+	if err != nil{
+		return detailMitraByAdmin, errors.New("ktp is not found")
+	}
+
+	detailMitraByAdmin.KTP = ktp.GambarKtp
+
+	return detailMitraByAdmin, nil
 }
