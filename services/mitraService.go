@@ -32,7 +32,8 @@ type MitraService interface {
 	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
 	GetAllMitra(ctx context.Context) ([]formatters.MitraDashboardSummaryResponse, error)
 	GetDashboardSummary(ctx context.Context, userId primitive.ObjectID) (formatters.DashboardSummaryMitra, error)
-	// get all layanan mitra (layanan and layanan mitra combined )
+	GetAllLayananOwnedByMitra(ctx context.Context, mitraId primitive.ObjectID)([]formatters.LayananDetailMitraResponse, error)
+	
 }
 
 type mitraService struct {
@@ -769,4 +770,51 @@ func (s *mitraService) GetDashboardSummary(ctx context.Context, userId primitive
 	dashboardSummaryMira.TotalPendapatanBersih = totalPendapatanBersih
 
 	return dashboardSummaryMira, nil
+}
+
+func (s *mitraService) GetAllLayananOwnedByMitra(ctx context.Context, mitraId primitive.ObjectID)([]formatters.LayananDetailMitraResponse, error){
+	var layanansOwnedByMitra []formatters.LayananDetailMitraResponse
+
+	mitra, err := s.mitraRepository.GetMitraById(ctx, mitraId)
+
+	if err != nil{
+		return layanansOwnedByMitra, errors.New("mitra not found")
+	}
+
+	for _, bidangId := range mitra.Bidang{
+		bidang, err := s.bidangRepository.GetById(ctx, bidangId)
+
+		if err != nil{
+			return layanansOwnedByMitra, err
+		}
+
+		for _, layananId := range bidang.LayananId{
+			var layananOwnedByMitra formatters.LayananDetailMitraResponse
+			layanan, err := s.layananRepository.GetById(ctx, layananId)
+
+			if err != nil{
+				layananMitra, err := s.layananMitraRepository.GetById(ctx, layananId)
+
+				if err != nil{
+					return layanansOwnedByMitra, err
+				}
+
+				layananOwnedByMitra.ID = layananMitra.ID
+				layananOwnedByMitra.NamaLayanan = layananMitra.NamaLayanan
+				layananOwnedByMitra.Harga = layananMitra.Harga
+				layananOwnedByMitra.BidangId = bidangId
+
+				
+			}else{
+				layananOwnedByMitra.ID = layanan.ID
+				layananOwnedByMitra.NamaLayanan = layanan.NamaLayanan
+				layananOwnedByMitra.Harga = layanan.Harga
+				layananOwnedByMitra.BidangId = bidangId
+			}
+
+			layanansOwnedByMitra = append(layanansOwnedByMitra, layananOwnedByMitra)
+		}
+	}
+
+	return layanansOwnedByMitra, nil
 }

@@ -35,8 +35,8 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 
 	// auth
 	adminAuth := middlewares.AdminAuth(adminRepository)
-	// auth
 	mitra := middlewares.MitraAuth(mitraRepository)
+	authAll := middlewares.AuthAll()
 
 	mitraRoute := api.Group("/mitra")
 
@@ -51,4 +51,5 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute.Get("/detail/:mitraId", mitraHandler.DetailMitra)
 	mitraRoute.Get("/all", adminAuth.AuthAdmin, mitraHandler.GetAllMitra)
 	mitraRoute.Get("/dashboardSummary", mitra.AuthMitra, mitraHandler.GetDashboardSummary)
+	mitraRoute.Get("/layanan/all/:mitraId",authAll.AuthAll, mitraHandler.GetAllLayananOwnedByMitra )
 }

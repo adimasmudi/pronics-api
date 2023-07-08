@@ -323,3 +323,22 @@ func (h *mitraHandler) GetDashboardSummary(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *mitraHandler) GetAllLayananOwnedByMitra(c *fiber.Ctx) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mitraId, _ := primitive.ObjectIDFromHex(c.Params("mitraId"))
+
+	dashboardSummary, err := h.mitraService.GetAllLayananOwnedByMitra(ctx, mitraId)
+
+	if err != nil{
+		response := helper.APIResponse("Can't get layanan mitra", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("get layanan mitra success", http.StatusOK, "success",dashboardSummary )
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
