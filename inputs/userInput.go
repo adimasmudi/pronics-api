@@ -16,3 +16,8 @@ type ChangePasswordUserInput struct {
 	Password        string `json:"password" binding:"required"`
 	ConfirmPassword string `json:"confirm_password" binding:"required"`
 }
+
+type SignUpUserInput struct {
+	Email   string `json:"email" binding:"required"`
+	Picture string `json:"picture" binding:"required"`
+}

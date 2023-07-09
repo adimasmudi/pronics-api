@@ -50,5 +50,5 @@ func UserRoute(api fiber.Router, userCollection *mongo.Collection, customerColle
 
 	authUser.Get("/callback",userHandler.Callback)
 	authUser.Put("/changePassword", allAuth.AuthAll, userHandler.ChangePassword)
-
+	authUser.Post("/signUp/Google", userHandler.SignUpGoogle)
 }

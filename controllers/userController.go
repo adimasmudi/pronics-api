@@ -2,7 +2,6 @@ package controllers
 
 import (
 	"context"
-	"encoding/json"
 	"errors"
 	"io"
 	"net/http"
@@ -80,8 +79,37 @@ func (h *userHandler) Login(c *fiber.Ctx) error {
 	return nil
 }
 
-func (h *userHandler) Callback(c *fiber.Ctx) error {
+func (h *userHandler) SignUpGoogle(c *fiber.Ctx) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	var input inputs.SignUpUserInput
+
+	//validate the request body
+	if err := c.BodyParser(&input); err != nil {
+		response := helper.APIResponse("Signup user with google Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	user, token,  err := h.userService.Signup(ctx, input)
+
+	if err != nil{
+		response := helper.APIResponse("SIgn up with google Failed", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	userFormat := formatters.FormatUser(user)
+	
+	response := helper.APIResponse("SIgn up with google success", http.StatusOK, "success", &fiber.Map{ "user" : userFormat,"token" : token})
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
+
+// callback probably not used
+func (h *userHandler) Callback(c *fiber.Ctx) error {
+	_, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if c.FormValue("state") != os.Getenv("oAuth_String") {
@@ -112,19 +140,19 @@ func (h *userHandler) Callback(c *fiber.Ctx) error {
 		return nil
 	}
 
-	var googleUser helper.GoogleUser
+	// var googleUser helper.GoogleUser
 
-	json.Unmarshal([]byte(string(contents)), &googleUser)
+	// json.Unmarshal([]byte(string(contents)), &googleUser)
 
-	user,loginToken, err := h.userService.Signup(ctx,googleUser)
+	// user,loginToken, err := h.userService.Signup(ctx,googleUser)
 
-	if err != nil{
-		response := helper.APIResponse("Signup User Failed", http.StatusBadRequest, "error", err.Error())
-		c.Status(http.StatusBadRequest).JSON(response)
-		return nil
-	}
-	userFormat := formatters.FormatUser(user)
-	responses := helper.APIResponse("Signup User Success", http.StatusOK, "success", &fiber.Map{"user" : userFormat,"token" : loginToken})
+	// if err != nil{
+	// 	response := helper.APIResponse("Signup User Failed", http.StatusBadRequest, "error", err.Error())
+	// 	c.Status(http.StatusBadRequest).JSON(response)
+	// 	return nil
+	// }
+	// userFormat := formatters.FormatUser(user)
+	responses := helper.APIResponse("Get User Success", http.StatusOK, "success", contents)
 	c.Status(http.StatusOK).JSON(responses)
 	return nil
 

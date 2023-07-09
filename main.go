@@ -84,11 +84,20 @@ func main() {
 	fmt.Println("listen to port :",port)
 
 
-	app.Get("/",func(c *fiber.Ctx) error {
+	app.Get("/google",func(c *fiber.Ctx) error {
 		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
 		return c.SendString(`<html>
 		<body>
 			<a href="/api/v1/auth/user/login/google">Login dengan Google</a>
+		</body>
+		</html>`)
+	})
+
+	app.Get("/", func(c *fiber.Ctx) error {
+		c.Set(fiber.HeaderContentType, fiber.MIMETextHTML)
+		return c.SendString(`<html>
+		<body>
+			Wellcome
 		</body>
 		</html>`)
 	})

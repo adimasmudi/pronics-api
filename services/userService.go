@@ -23,7 +23,7 @@ type UserService interface {
 	Login(ctx context.Context, input inputs.LoginUserInput) (models.User, string, error)
 	Register(ctx context.Context, input inputs.RegisterUserInput) (*mongo.InsertOneResult, error)
 	RegisterMitra(ctx context.Context, input inputs.RegisterMitraInput, fileName string) (*mongo.InsertOneResult, error)
-	Signup(ctx context.Context, googleUser helper.GoogleUser) (models.User,string,error)
+	Signup(ctx context.Context, googleUser inputs.SignUpUserInput) (models.User,string,error)
 	ChangePassword(ctx context.Context, ID primitive.ObjectID, input inputs.ChangePasswordUserInput) (*mongo.UpdateResult, error)
 }
 
@@ -233,7 +233,7 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 	return user, token, nil
 }
 
-func (s *userService) Signup(ctx context.Context, googleUser helper.GoogleUser) (models.User,string,error){
+func (s *userService) Signup(ctx context.Context, googleUser inputs.SignUpUserInput) (models.User,string,error){
 	var user models.User
 	userExist, _ := s.userRepository.IsUserExist(ctx,googleUser.Email)
 
