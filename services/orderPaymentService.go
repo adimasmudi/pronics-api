@@ -173,9 +173,7 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		transportFee *= float64(distance * constants.CostPerKMMoreThan10KM)
 	}
 
-	var percentageAppsCharge int
-
-	fmt.Println("ttl",biayaLayanan+transportFee)
+	var percentageAppsCharge float64
 
 	if (biayaLayanan+transportFee) <= 100000{
 		percentageAppsCharge = constants.AppsChargePercentageLessThan100k
@@ -183,9 +181,7 @@ func (s *orderPaymentService) AddOrUpdateOrderPayment(ctx context.Context, order
 		percentageAppsCharge = constants.AppsChargePercentageMoreThan100k
 	}
 
-	fmt.Println(percentageAppsCharge)
-
-	biayaAplikasi := (biayaLayanan+transportFee) * float64(percentageAppsCharge) / 100
+	biayaAplikasi := (biayaLayanan+transportFee) * percentageAppsCharge / 100
 
 	orderPayment, err := s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailId)
 
