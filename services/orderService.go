@@ -414,7 +414,7 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 	var orderResponses []formatters.OrderResponse
 
 	status = strings.ToLower(status)
-	if(status != "semua" && status != constants.OrderCanceled  && status != constants.OrderProcess  && status != constants.OrderWaiting){
+	if(status != "semua" && status != constants.OrderProcess  && status != constants.OrderWaiting){
 		return orderResponses, errors.New("order hanya dapat ditampilkan 'semua' atau antara 'menunggu', 'proses'")
 	}
 	
@@ -443,6 +443,10 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 	for _, order := range orders{
 
 		if !strings.Contains(order.Status, show){
+			continue
+		}
+
+		if !strings.Contains(order.Status, constants.OrderProcess) && !strings.Contains(order.Status, constants.OrderWaiting) {
 			continue
 		}
 
