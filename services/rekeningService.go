@@ -17,15 +17,17 @@ type RekeningService interface {
 	GetDetailRekening(ctx context.Context, userId primitive.ObjectID) (formatters.RekeningResponse, error)
 	UpdateRekening(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateRekeningInput)(*mongo.UpdateResult, error)
 	SaveRekening(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateRekeningInput) (*mongo.InsertOneResult, error)
+	GetRekeningMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.RekeningResponse, error)
 }
 
 type rekeningService struct{
 	rekeningRepository repositories.RekeningRepository
 	bankRepository repositories.BankRepository
+	mitraRepository repositories.MitraRepository
 }
 
-func NewRekeningService(rekeningRepository repositories.RekeningRepository, bankRepository repositories.BankRepository) *rekeningService{
-	return &rekeningService{rekeningRepository, bankRepository}
+func NewRekeningService(rekeningRepository repositories.RekeningRepository, bankRepository repositories.BankRepository, mitraRepository repositories.MitraRepository) *rekeningService{
+	return &rekeningService{rekeningRepository, bankRepository,mitraRepository}
 }
 
 func (s *rekeningService) SaveRekening(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateRekeningInput) (*mongo.InsertOneResult, error){
@@ -101,4 +103,34 @@ func (s *rekeningService) UpdateRekening(ctx context.Context, userId primitive.O
 	}
 
 	return updatedRekening, nil
+}
+
+func (s *rekeningService) GetRekeningMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.RekeningResponse, error){
+
+	var rekeningMitra formatters.RekeningResponse
+
+	mitra, err := s.mitraRepository.GetMitraById(ctx, mitraId)
+
+	if err != nil{
+		return rekeningMitra, err
+	}
+
+	rekening, err := s.rekeningRepository.GetRekeningByIdUser(ctx, mitra.UserId)
+
+	if err != nil{
+		return rekeningMitra, err
+	}
+
+	bank, err := s.bankRepository.GetBankById(ctx, rekening.BankId)
+
+	if err != nil{
+		return rekeningMitra, err
+	}
+
+	rekeningMitra.ID = rekening.ID
+	rekeningMitra.Bank = bank
+	rekeningMitra.NamaPemilik = rekening.NamaPemilik
+	rekeningMitra.NomerRekening = rekening.NomerRekening
+
+	return rekeningMitra, nil
 }

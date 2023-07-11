@@ -92,3 +92,22 @@ func (h *rekeningHandler) AddRekening(c *fiber.Ctx) error {
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }
+
+func (h *rekeningHandler) GetRekeningMitra(c *fiber.Ctx) error{
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	mitraId, _ := primitive.ObjectIDFromHex(c.Params("mitraId"))
+
+	rekening, err := h.rekeningService.GetRekeningMitra(ctx, mitraId)
+
+	if err != nil {
+		response := helper.APIResponse("Can't get rekening mitra", http.StatusBadRequest, "error", err.Error())
+		c.Status(http.StatusBadRequest).JSON(response)
+		return nil
+	}
+
+	response := helper.APIResponse("get rekening mitra success", http.StatusOK, "success", rekening)
+	c.Status(http.StatusOK).JSON(response)
+	return nil
+}
