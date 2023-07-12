@@ -550,15 +550,11 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 		return detailMitra, errors.New("galeri image not found")
 	}
 
-	fmt.Println("sini 553")
-
 	var galeriMitra []string
 
 	for _, galeri := range galeriImage{
 		galeriMitra = append(galeriMitra, galeri.Gambar)
 	}
-
-	fmt.Println("sini 561")
 
 	var bidangArr []string
 	var layananArr []formatters.LayananDetailMitraResponse
@@ -570,8 +566,6 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 			return detailMitra, errors.New("bidang mitra not found")
 		}
 
-		fmt.Println("sini 573")
-
 		bidangArr = append(bidangArr, bidangMitra.NamaBidang)
 
 		layanan, err := s.layananRepository.FindAllByBidangId(ctx, bidangMitra.ID)
@@ -580,15 +574,11 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 			return detailMitra, errors.New("layanan not found")
 		}
 
-		fmt.Println("sini 583")
-
 		layananMitra, err := s.layananMitraRepository.FindAllByBidangAndMitra(ctx, bidangMitra.ID, mitra.ID)
 
 		if err != nil{
 			return detailMitra, errors.New("layanan mitra not found")
 		}
-
-		fmt.Println("sini 591")
 
 		for _, item := range layanan{
 			var layananForResponse formatters.LayananDetailMitraResponse
@@ -618,8 +608,6 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 	if err != nil{
 		detailMitra.Ulasan = nil
 	}
-
-	fmt.Println("sini 622")
 
 	var averageRating = 0.0
 	var commentsResponse formatters.KomentarDetailMitraResponse
@@ -681,8 +669,6 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 		commentsResponse.AllKomentar = append(commentsResponse.AllKomentar, commentResponse)
 	}
 
-	fmt.Println("sini 684")
-
 	banyakComment := len(comments)
 
 	commentsResponse.UlasanCount = banyakComment
@@ -692,9 +678,6 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 	}else{
 		commentsResponse.OverallRating = averageRating / float64(banyakComment)
 	}
-	
-
-	fmt.Println("sini 691", commentsResponse.OverallRating)
 
 
 	detailMitra.ID = mitra.ID
@@ -706,8 +689,6 @@ func (s *mitraService) GetDetailMitra(ctx context.Context, mitraId primitive.Obj
 	detailMitra.Bidang = bidangArr
 	detailMitra.Layanan = layananArr
 	detailMitra.Ulasan = commentsResponse
-
-	fmt.Println("sini 704", detailMitra)
 	
 
 	return detailMitra, nil
