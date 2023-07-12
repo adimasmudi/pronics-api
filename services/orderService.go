@@ -276,7 +276,7 @@ func (s *orderService) GetAllOrder(ctx context.Context)([]formatters.OrderRespon
 	}
 
 	sort.Slice(orderResponses, func(i, j int) bool {
-		return orderResponses[i].TerakhirDiUpdate.Unix() < orderResponses[j].TerakhirDiUpdate.Unix()
+		return orderResponses[i].TanggalOrder.After(orderResponses[j].TanggalOrder)
 	})
 
 	return orderResponses, nil
@@ -539,7 +539,7 @@ func (s *orderService) GetAllOrderMitra(ctx context.Context, userId primitive.Ob
 	}
 
 	sort.Slice(orderResponses, func(i, j int) bool {
-		return orderResponses[i].TerakhirDiUpdate.Unix() < orderResponses[j].TerakhirDiUpdate.Unix()
+		return orderResponses[i].TanggalOrder.After(orderResponses[j].TanggalOrder)
 	})
 
 	return orderResponses, nil
@@ -736,7 +736,7 @@ func (s *orderService) GetAllOrderHistory(ctx context.Context, userId primitive.
 	}
 
 	sort.Slice(allHistories, func(i, j int) bool {
-		return allHistories[i].TanggalOrder.Unix() < allHistories[j].TanggalOrder.Unix()
+		return allHistories[i].TanggalOrder.After(allHistories[j].TanggalOrder)
 	})
 
 	return allHistories, nil
