@@ -125,11 +125,8 @@ func (s *orderService) CreateTemporaryOrder(ctx context.Context, userId primitiv
 				layananData.BidangId = bidangToOrder.ID
 			}
 
-			orderPaymentToDisplay, err = s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailToDisplay.ID)
+			orderPaymentToDisplay, _ = s.orderPaymentRepository.GetByOrderDetailId(ctx, orderDetailToDisplay.ID)
 
-			if err != nil{
-				return orderData, err
-			}
 		}
 
 		jarak, err := helper.DistanceCalculation(orderDetailToDisplay.AlamatPemesanan, mitra.Alamat)
