@@ -1,7 +1,7 @@
 package helper
 
 type GoogleUser struct {
-	Id            int
+	Id            string
 	Email         string
 	VerifiedEmail bool
 	Picture       string

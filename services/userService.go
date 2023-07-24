@@ -233,8 +233,22 @@ func (s *userService) Login(ctx context.Context, input inputs.LoginUserInput) (m
 	return user, token, nil
 }
 
-func (s *userService) Signup(ctx context.Context, googleUser inputs.SignUpUserInput) (models.User,string,error){
+func (s *userService) Signup(ctx context.Context, input inputs.SignUpUserInput) (models.User,string,error){
 	var user models.User
+
+	response, err := helper.VerifyIdToken(input.Credential)
+
+	if err != nil{
+		return user, "", errors.New("error validation token")
+	}
+
+	var googleUser helper.GoogleUser
+
+	googleUser.Id = response.UserId
+	googleUser.Email = response.Email
+	googleUser.Picture = response.Audience
+	googleUser.VerifiedEmail = response.VerifiedEmail
+	
 	userExist, _ := s.userRepository.IsUserExist(ctx,googleUser.Email)
 
 	if !userExist{
@@ -280,13 +294,13 @@ func (s *userService) Signup(ctx context.Context, googleUser inputs.SignUpUserIn
 		return userFound,"", err
 	}
 
-	token,err := helper.GenerateToken(userFound.ID)
+	loginToken,err := helper.GenerateToken(userFound.ID)
 
 	if err != nil{
 		return userFound,"", err
 	}
 
-	return userFound,token, nil
+	return userFound,loginToken, nil
 }
 
 func (s *userService) ChangePassword(ctx context.Context, ID primitive.ObjectID, input inputs.ChangePasswordUserInput) (*mongo.UpdateResult, error){

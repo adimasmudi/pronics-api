@@ -102,7 +102,7 @@ func (h *userHandler) SignUpGoogle(c *fiber.Ctx) error {
 
 	userFormat := formatters.FormatUser(user)
 	
-	response := helper.APIResponse("SIgn up with google success", http.StatusOK, "success", &fiber.Map{ "user" : userFormat,"token" : token})
+	response := helper.APIResponse("Sign up with google success", http.StatusOK, "success", &fiber.Map{ "user" : userFormat,"token" : token})
 	c.Status(http.StatusOK).JSON(response)
 	return nil
 }

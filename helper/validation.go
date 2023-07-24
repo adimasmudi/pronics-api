@@ -2,10 +2,12 @@ package helper
 
 import (
 	"errors"
+	"net/http"
 	"os"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
+	"google.golang.org/api/oauth2/v2"
 )
 
 func FormatValidationError(err error) []string {
@@ -32,4 +34,17 @@ func ValidateToken(encodedToken string) (*jwt.Token, error) {
 	}
 
 	return token, nil
+}
+
+var httpClient = &http.Client{}
+
+func VerifyIdToken(idToken string) (*oauth2.Tokeninfo, error) {
+    oauth2Service, err := oauth2.New(httpClient)
+    tokenInfoCall := oauth2Service.Tokeninfo()
+    tokenInfoCall.IdToken(idToken)
+    tokenInfo, err := tokenInfoCall.Do()
+    if err != nil {
+        return nil, err
+    }
+    return tokenInfo, nil
 }
