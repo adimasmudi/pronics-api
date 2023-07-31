@@ -245,6 +245,9 @@ func (s *savedService) ShowAll(ctx context.Context, userId primitive.ObjectID, s
 
 		katalogMitra.Distance = jarak
 
+		// cause it's placed in saved page, it always saved = true
+		katalogMitra.IsSaved = true
+
 		savedResponse.ID = savedMitra.ID
 		savedResponse.Mitra = katalogMitra
 

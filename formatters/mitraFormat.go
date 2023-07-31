@@ -26,6 +26,7 @@ type KatalogResponse struct{
 	Distance float64 `json:"jarak"`
 	Bidang []BidangResponse `json:"bidang"`
 	Rating float64 `json:"rating"`
+	IsSaved bool `json:"is_saved"`
 }
 type DetailMitraResponse struct{
 	ID primitive.ObjectID `json:"id"`

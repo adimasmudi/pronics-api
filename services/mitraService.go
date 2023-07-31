@@ -27,7 +27,7 @@ type MitraService interface {
 	GetAllBidangMitra(ctx context.Context, userId primitive.ObjectID) ([]formatters.BidangResponse, error)
 	UpdateBidang(ctx context.Context, userId primitive.ObjectID, input inputs.UpdateBidangMitraInput) (*mongo.UpdateResult, error)
 	DetailBidang(ctx context.Context,userId primitive.ObjectID, bidangId primitive.ObjectID) (formatters.DetailBidangResponse, error)
-	ShowKatalogMitra(ctx context.Context, searchFilter map[string] string) ([]formatters.KatalogResponse, error)
+	ShowKatalogMitra(ctx context.Context, userId primitive.ObjectID, searchFilter map[string] string) ([]formatters.KatalogResponse, error)
 	ActivateMitra(ctx context.Context, mitraId primitive.ObjectID) (*mongo.UpdateResult, error)
 	GetDetailMitra(ctx context.Context, mitraId primitive.ObjectID) (formatters.DetailMitraResponse, error)
 	GetAllMitra(ctx context.Context) ([]formatters.MitraDashboardSummaryResponse, error)
@@ -51,10 +51,11 @@ type mitraService struct {
 	orderDetailRepository repositories.OrderDetailRepository
 	orderPaymentRepository repositories.OrderPaymentRepository
 	ktpMitraRepository repositories.KTPMitraRepository
+	savedRepository repositories.SavedRepository
 }
 
-func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository, ktpMitraRepository repositories.KTPMitraRepository) *mitraService{
-	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository, ktpMitraRepository}
+func NewMitraService(userRepository repositories.UserRepository, mitraRepository repositories.MitraRepository, galeriMitraRepository repositories.GaleriRepository, wilayahRepository repositories.WilayahRepository, bidangRepository repositories.BidangRepository, kategoriRepository repositories.KategoriRepository, layananRepository repositories.LayananRepository, layananMitraRepository repositories.LayananMitraRepository, komentarRepository repositories.KomentarRepository, customerRepository repositories.CustomerRepository, orderRepository repositories.OrderRepository, orderDetailRepository repositories.OrderDetailRepository, orderPaymentRepository repositories.OrderPaymentRepository, ktpMitraRepository repositories.KTPMitraRepository, savedRepository repositories.SavedRepository) *mitraService{
+	return &mitraService{userRepository, mitraRepository, galeriMitraRepository, wilayahRepository, bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository, ktpMitraRepository, savedRepository}
 }
 
 func (s *mitraService) GetMitraProfile(ctx context.Context, ID primitive.ObjectID) (formatters.MitraResponse, error){
@@ -328,7 +329,7 @@ func (s *mitraService) DetailBidang(ctx context.Context,userId primitive.ObjectI
 	return detailBidang, nil
 }
 
-func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[string] string) ([]formatters.KatalogResponse, error){
+func (s *mitraService) ShowKatalogMitra(ctx context.Context, userId primitive.ObjectID, searchFilter map[string] string) ([]formatters.KatalogResponse, error){
 	var katalogMitraResponses []formatters.KatalogResponse
 
 	allMitra, err := s.mitraRepository.FindAllActiveMitra(ctx)
@@ -345,6 +346,12 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 
 	if alamatCustomer == ""{
 		return nil, errors.New("alamat customer wajib diisi")
+	}
+
+	customer, err := s.customerRepository.GetCustomerByIdUser(ctx, userId)
+
+	if err != nil{
+		return nil, errors.New("customer not found")
 	}
 
 	for _, mitra := range allMitra{
@@ -488,6 +495,14 @@ func (s *mitraService) ShowKatalogMitra(ctx context.Context, searchFilter map[st
 		}
 
 		katalogMitra.Distance = distance
+
+		_, err = s.savedRepository.GetByIdCustomerNMitra(ctx,customer.ID, mitra.ID)
+
+		if err != nil{
+			katalogMitra.IsSaved = false
+		}else{
+			katalogMitra.IsSaved = true
+		}
 
 		katalogMitraResponses = append(katalogMitraResponses, katalogMitra)
 	}

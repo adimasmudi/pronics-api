@@ -10,7 +10,7 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 )
 
-func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollection *mongo.Collection, galeriMitraCollection *mongo.Collection, wilayahCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection, komentarCollection *mongo.Collection,customerCollection *mongo.Collection, orderCollection *mongo.Collection, orderDetailCollection *mongo.Collection,orderPaymentCollection *mongo.Collection, adminCollection *mongo.Collection, ktpMitraCollection *mongo.Collection) {
+func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollection *mongo.Collection, galeriMitraCollection *mongo.Collection, wilayahCollection *mongo.Collection, bidangCollection *mongo.Collection, kategoriCollection *mongo.Collection, layananCollection *mongo.Collection, layananMitraCollection *mongo.Collection, komentarCollection *mongo.Collection,customerCollection *mongo.Collection, orderCollection *mongo.Collection, orderDetailCollection *mongo.Collection,orderPaymentCollection *mongo.Collection, adminCollection *mongo.Collection, ktpMitraCollection *mongo.Collection, savedCollection *mongo.Collection) {
 	// repositories
 	userRepository := repositories.NewUserRepository(userCollection)
 	mitraRepository := repositories.NewMitraRepository(mitraCollection)
@@ -27,9 +27,10 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	orderPaymentRepository := repositories.NewOrderPaymentRepository(orderPaymentCollection)
 	adminRepository := repositories.NewAdminRepository(adminCollection)
 	ektpRepository := repositories.NewKTPMitraRepository(ktpMitraCollection)
+	savedRepository := repositories.NewSavedRepository(savedCollection)
 	
 	// services
-	mitraService := services.NewMitraService(userRepository, mitraRepository, galeriMitraRepository, wilayahRepository,bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository, ektpRepository)
+	mitraService := services.NewMitraService(userRepository, mitraRepository, galeriMitraRepository, wilayahRepository,bidangRepository, kategoriRepository, layananRepository, layananMitraRepository, komentarRepository, customerRepository, orderRepository, orderDetailRepository, orderPaymentRepository, ektpRepository, savedRepository)
 
 	// controllers
 	mitraHandler := controllers.NewMitraHandler(mitraService)
@@ -37,6 +38,7 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	// auth
 	adminAuth := middlewares.AdminAuth(adminRepository)
 	mitra := middlewares.MitraAuth(mitraRepository)
+	customer := middlewares.CustomerAuth(customerRepository)
 	authAll := middlewares.AuthAll()
 
 	mitraRoute := api.Group("/mitra")
@@ -47,9 +49,9 @@ func MitraRoute(api fiber.Router, userCollection *mongo.Collection, mitraCollect
 	mitraRoute.Put("/updateBidang", mitra.AuthMitra, mitraHandler.UpdateBidang)
 	mitraRoute.Get("/getBidangs",mitra.AuthMitra, mitraHandler.GetBidangMitra)
 	mitraRoute.Get("/getBidang/detail/:bidangId", mitra.AuthMitra, mitraHandler.DetailBidangMitra)
-	mitraRoute.Get("/showKatalog", mitraHandler.ShowKatalogMitra)
+	mitraRoute.Get("/showKatalog", customer.AuthCustomer,mitraHandler.ShowKatalogMitra)
 	mitraRoute.Put("/activate/:mitraId", adminAuth.AuthAdmin, mitraHandler.ActivateMitra)
-	mitraRoute.Get("/detail/:mitraId", mitraHandler.DetailMitra)
+	mitraRoute.Get("/detail/:mitraId", customer.AuthCustomer,mitraHandler.DetailMitra)
 	mitraRoute.Get("/all", adminAuth.AuthAdmin, mitraHandler.GetAllMitra)
 	mitraRoute.Get("/dashboardSummary", mitra.AuthMitra, mitraHandler.GetDashboardSummary)
 	mitraRoute.Get("/layanan/all/:mitraId",authAll.AuthAll, mitraHandler.GetAllLayananOwnedByMitra )

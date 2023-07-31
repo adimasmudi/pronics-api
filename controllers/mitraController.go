@@ -237,7 +237,9 @@ func (h *mitraHandler) ShowKatalogMitra(c *fiber.Ctx) error {
 	searchFilter["urut"] = urut
 	searchFilter["alamatCustomer"] = alamatCustomer
 
-	katalogMitra, err := h.mitraService.ShowKatalogMitra(ctx, searchFilter)
+	currentUserId, _ := primitive.ObjectIDFromHex(c.Locals("currentUserID").(string))
+
+	katalogMitra, err := h.mitraService.ShowKatalogMitra(ctx, currentUserId, searchFilter)
 
 	if err != nil {
 		response := helper.APIResponse("Get katalog mitra failed", http.StatusBadRequest, "error", err.Error())
