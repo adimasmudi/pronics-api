@@ -3,6 +3,7 @@ package services
 import (
 	"context"
 	"errors"
+	"fmt"
 	"pronics-api/configs"
 	"pronics-api/constants"
 	"pronics-api/formatters"
@@ -17,7 +18,6 @@ import (
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
-	"golang.org/x/exp/slices"
 	"googlemaps.github.io/maps"
 )
 
@@ -592,6 +592,8 @@ func (s *orderService) GetAllOrderHistory(ctx context.Context, userId primitive.
 
 	var typeUser string
 	var orders []models.Order
+	var newOrders []models.Order
+
 	if user.Type == constants.UserMitra{
 
 		if filter != "semua" && filter != constants.OrderCanceled && filter != constants.OrderRejected && filter != constants.OrderCompleted{
@@ -612,9 +614,10 @@ func (s *orderService) GetAllOrderHistory(ctx context.Context, userId primitive.
 			return allHistories, err
 		}
 
-		for idx,order := range orders{
-			if order.Status == constants.OrderProcess || order.Status == constants.OrderWaiting || order.Status == constants.OrderTemporary{
-				orders = slices.Delete(orders, idx, idx + 1)
+		for _,order := range orders{
+			fmt.Println("status",order.Status)
+			if !(order.Status == constants.OrderProcess || order.Status == constants.OrderWaiting || order.Status == constants.OrderTemporary){
+				newOrders = append(newOrders, order)
 			}
 		}
 
@@ -634,24 +637,27 @@ func (s *orderService) GetAllOrderHistory(ctx context.Context, userId primitive.
 			return allHistories, err
 		}
 
-		for idx,order := range orders{
-			if order.Status == constants.OrderTemporary{
-				orders = slices.Delete(orders, idx, idx + 1)
+		for _,order := range orders{
+			if !(order.Status == constants.OrderTemporary){
+				newOrders = append(newOrders, order)
 			}
 		}
 	}else{
 		return allHistories, err
 	}
 	
+	var ordersToReturn []models.Order
 	if(filter != "semua"){
-		for idx,order := range orders{
-			if order.Status != filter{
-				orders = slices.Delete(orders, idx, idx + 1)
+		for _,order := range newOrders{
+			if order.Status == filter{
+				ordersToReturn = append(ordersToReturn, order)
 			}
 		}
+	}else{
+		ordersToReturn = newOrders
 	}
 
-	for _, order := range orders{
+	for _, order := range ordersToReturn{
 		var historyResponse formatters.OrderHistoryResponse
 
 		var name string
