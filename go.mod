@@ -12,6 +12,7 @@ require (
 	golang.org/x/crypto v0.11.0
 	golang.org/x/exp v0.0.0-20230626212559-97b1e661b5df
 	golang.org/x/oauth2 v0.10.0
+	google.golang.org/api v0.132.0
 	googlemaps.github.io/maps v1.5.0
 )
 
@@ -58,7 +59,6 @@ require (
 	golang.org/x/text v0.11.0 // indirect
 	golang.org/x/time v0.0.0-20200416051211-89c76fbcd5d1 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
-	google.golang.org/api v0.132.0 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20230706204954-ccb25ca9f130 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230706204954-ccb25ca9f130 // indirect
